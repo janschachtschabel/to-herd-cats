@@ -12,7 +12,7 @@ agreed contracts. Keep everything modular.
 ## 1. What the app does
 
 A single cockpit where a user defines AI agents ("employees") with a role, a
-goal, an LLM, tools and data sources, then runs them on demand, on a schedule,
+goal, an LLM, tools, skills and data sources, then runs them on demand, on a schedule,
 on events, or autonomously. Agents work in the background and post results,
 questions and approval requests into a postbox the user can act on. Agent output
 can be turned into structured reports, research write-ups and comparisons via
@@ -21,7 +21,10 @@ systems (wikis, databases, MCP servers, channels) rather than replacing them.
 
 Guiding principle: MCP is the universal seam. Every tool, data source and
 channel is registered at runtime through the MCP gateway, never hard-wired —
-this is what keeps the system modular and vendor-neutral.
+this is what keeps the system modular and vendor-neutral. Agent capability comes
+on two axes: tools and data (what an agent acts on, wired through MCP) and skills
+(packaged procedural know-how the agent follows — a SKILL.md, optionally bound to
+a fixed command). Both are pluggable, never baked into agent code.
 
 ## 2. Usage scenarios & users
 
@@ -46,7 +49,8 @@ Representative scenarios:
 Agent lifecycle
 - Create, configure, enable/disable and monitor agents.
 - Define role, goal, instructions and guardrails (which actions need approval).
-- Assign one LLM connection, N tools, N data sources, a default output template.
+- Assign one LLM connection, N tools, N skills, N data sources, a default
+  output template.
 
 Tools & data
 - Register MCP servers; auto-discover their tools; enable a subset per agent.
@@ -54,6 +58,15 @@ Tools & data
 - Connect any plain REST API by wrapping it as a virtual MCP endpoint.
 - One generic "add server/source" form rendered from a config schema — no
   hard-coded UI per integration.
+
+Skills & know-how
+- Register skills (open SKILL.md format: name, description, instructions,
+  optional bundled scripts/resources); enable a subset per agent.
+- Two invocation modes: model-invoked (matched by description, progressive
+  disclosure) and fixed command (deterministic, repeatable procedure).
+- Author skills in-app (create / validate / test SKILL.md), aided by an
+  AI-assisted skill-creator that drafts a skill from a plain-language description.
+- Executable skills (bundled scripts) run only in an isolated sandbox (see §9).
 
 LLM
 - Register LLM connections (any provider via LiteLLM), with defaults and limits.
@@ -89,6 +102,10 @@ Backend / control API
 - LLM gateway: LiteLLM (one endpoint, virtual keys, cost tracking)
 - MCP gateway: MCPJungle (default); IBM ContextForge to wrap REST/gRPC as MCP
 - Structured output: Instructor + Pydantic; rendering: Jinja2
+- Skills: open SKILL.md format (frontmatter name/description + Markdown + optional
+  scripts); the cockpit loads and injects them itself, so skills work with any
+  LLM. Executable skills run in an isolated sandbox (restricted subprocess /
+  container, least-privilege)
 - Observability: Langfuse + OpenTelemetry
 
 Persistence (internal system-of-record)
@@ -122,7 +139,7 @@ Cross-cutting — Auth/RBAC (Keycloak), Observability (Langfuse / OTel)
 
 Each domain area is its own bounded module so files stay small and a coding
 agent can work on one area in isolation:
-agents · tools · data_sources · llm · mcp · triggers · runtime · inbox ·
+agents · tools · skills · data_sources · llm · mcp · triggers · runtime · inbox ·
 templates · channels · auth · settings.
 
 ## 6. Repository layout
@@ -135,7 +152,7 @@ backend/
     repositories/   # persistence access, behind interfaces (SQLite/Postgres)
     models/         # SQLAlchemy ORM models
     schemas/        # Pydantic request/response/domain schemas
-    runtime/        # LangGraph graphs + agent execution
+    runtime/        # LangGraph graphs + agent execution + skill resolution/sandbox
     triggers/       # scheduler, event handlers, durable-exec adapters
     integrations/   # litellm, mcp_gateway, langfuse clients
     core/           # settings, security, secret_ref, db session
@@ -158,7 +175,7 @@ infra/
 Entities (rough shapes; the coding agent defines concrete schemas + migrations):
 
 Agent — id, name, role, goal, description, icon, instructions, llm_connection_id,
-tool_ids[], data_source_ids[], memory {mode: none|short|long, vector_store_ref},
+tool_ids[], skill_ids[], data_source_ids[], memory {mode: none|short|long, vector_store_ref},
 guardrails {requires_approval_for[]}, default_template_id,
 status (draft|active|disabled), audit.
 
@@ -172,6 +189,13 @@ status (connected|error), discovered_tools[] (cache).
 
 Tool — id, name, description, type (mcp|http|builtin), mcp_server_id, tool_name,
 input_schema (JSON Schema), requires_approval, scopes, enabled.
+
+Skill — id, name, description (the match/trigger signal for progressive
+disclosure), instructions (SKILL.md body), source (inline|file|git|registry) +
+source_ref, resources[] (bundled files/scripts), commands[] (fixed-command
+triggers, each with optional input_schema), invocation (model_invoked|command|
+both), allowed_tool_ids[] (tools the skill may use, optional), requires_approval,
+scopes (sandbox limits for bundled scripts), enabled, audit.
 
 DataSource — id, name, kind (vector|graph|relational|document|wiki),
 mcp_server_id | connection_ref (driver + SecretRef), capabilities (read|write|
@@ -206,7 +230,8 @@ as SecretRef pointing to an external backend (env / Vault), never plaintext.
 
 Relationships:
 - Agent 1–N Trigger · Agent 1–N Run · Agent N–1 LLMConnection
-- Agent N–M Tool · Agent N–M DataSource · Agent N–1 Template (default)
+- Agent N–M Tool · Agent N–M Skill · Agent N–M DataSource · Agent N–1 Template (default)
+- Skill N–M Tool (a skill may call tools, optional)
 - MCPServer 1–N Tool · MCPServer 1–N DataSource (optional)
 - Trigger 1–N Run · Run 1–N InboxItem · Channel N–M InboxItem (routing)
 
@@ -221,6 +246,11 @@ Relationships:
   comparison is a structured diff of two Run.result objects on the same schema.
 - Generic integration form. The add-server / add-source UI is rendered from
   MCPServer.config_schema; users enter values and secrets — no per-integration UI.
+- Skill resolution. At run time the runtime matches the task against enabled
+  skills by description and injects matching skill instructions into the agent
+  context (progressive disclosure); a fixed command invokes its skill
+  deterministically, bypassing model choice. Executable skills run their scripts
+  only in the sandbox (§9), approval-gateable via the postbox.
 
 ## 9. Hard rules (non-negotiable)
 
@@ -242,14 +272,21 @@ Relationships:
    messages in English; the UI ships German first.
 10. Tests required for every service and component (pytest / Vitest). New module
     => new test file.
+11. Executable skills run untrusted code: only in an isolated, least-privilege
+    sandbox (restricted subprocess / container), never in the control-plane
+    process; no host FS/network beyond declared scopes; execution is
+    approval-gateable and audited.
 
-## 10. Adding tools & data sources (MCP-first)
+## 10. Adding capabilities — tools & data (MCP-first), skills (SKILL.md)
 
 - Register MCP servers in the gateway. The cockpit reads the server's config
   schema and renders an "Add server" form where secrets go into form fields
   (Smithery-style config JSON as the model). No manual env/args wiring for users.
 - Any plain REST API -> wrap as a virtual MCP endpoint via ContextForge. Do not
   bake API calls into agent code.
+- Skills are added differently (no MCP server needed): author or import a
+  SKILL.md via the in-app skill editor or the AI-assisted skill-creator; a skill
+  may declare the tools it uses. Executable skills are sandboxed (§9).
 
 ## 11. Commands
 
