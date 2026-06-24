@@ -7,7 +7,9 @@ from fastapi import FastAPI
 from app.api.agents import router as agents_router
 from app.api.health import router as health_router
 from app.api.llm_connections import router as llm_connections_router
+from app.api.mcp_servers import router as mcp_servers_router
 from app.api.skills import router as skills_router
+from app.api.tools import router as tools_router
 from app.core.db import make_engine, make_session_factory
 from app.core.settings import Settings, get_settings
 
@@ -34,6 +36,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(agents_router)
     app.include_router(llm_connections_router)
     app.include_router(skills_router)
+    app.include_router(mcp_servers_router)
+    app.include_router(tools_router)
     return app
 
 

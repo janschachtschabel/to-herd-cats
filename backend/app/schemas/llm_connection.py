@@ -5,22 +5,10 @@ accepted (and therefore never persisted). See app.core.secret_ref.
 """
 
 from datetime import datetime
-from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.secret_ref import is_secret_ref
-
-
-def _validate_secret_ref(value: str | None) -> str | None:
-    if value is not None and not is_secret_ref(value):
-        raise ValueError(
-            "must be a secret reference like 'env:VAR_NAME', not a plaintext secret"
-        )
-    return value
-
-
-SecretRefField = Annotated[str | None, AfterValidator(_validate_secret_ref)]
+from app.schemas.common import SecretRefField
 
 
 class LLMParams(BaseModel):

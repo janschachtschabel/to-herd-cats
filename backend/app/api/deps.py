@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.agents import AgentService
 from app.services.llm_connections import LLMConnectionService
+from app.services.mcp_servers import MCPServerService
 from app.services.skills import SkillService
+from app.services.tools import ToolService
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -36,3 +38,15 @@ def get_llm_connection_service(
 def get_skill_service(session: AsyncSession = Depends(get_session)) -> SkillService:
     """Build the skill service for a request, bound to its session."""
     return SkillService(session)
+
+
+def get_mcp_server_service(
+    session: AsyncSession = Depends(get_session),
+) -> MCPServerService:
+    """Build the MCP-server service for a request, bound to its session."""
+    return MCPServerService(session)
+
+
+def get_tool_service(session: AsyncSession = Depends(get_session)) -> ToolService:
+    """Build the tool service for a request, bound to its session."""
+    return ToolService(session)
