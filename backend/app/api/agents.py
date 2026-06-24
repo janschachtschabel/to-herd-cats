@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_agent_service
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
-from app.services.agents import AgentNotFoundError, AgentService
+from app.services.agents import AgentService
+from app.services.base import EntityNotFoundError
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -31,7 +32,7 @@ async def get_agent(
 ) -> AgentRead:
     try:
         agent = await service.get(agent_id)
-    except AgentNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "agent not found") from None
     return AgentRead.model_validate(agent)
 
@@ -44,7 +45,7 @@ async def update_agent(
 ) -> AgentRead:
     try:
         agent = await service.update(agent_id, payload)
-    except AgentNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "agent not found") from None
     return AgentRead.model_validate(agent)
 
@@ -55,5 +56,5 @@ async def delete_agent(
 ) -> None:
     try:
         await service.delete(agent_id)
-    except AgentNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "agent not found") from None

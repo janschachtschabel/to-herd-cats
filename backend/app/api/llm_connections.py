@@ -8,10 +8,8 @@ from app.schemas.llm_connection import (
     LLMConnectionRead,
     LLMConnectionUpdate,
 )
-from app.services.llm_connections import (
-    LLMConnectionNotFoundError,
-    LLMConnectionService,
-)
+from app.services.base import EntityNotFoundError
+from app.services.llm_connections import LLMConnectionService
 
 router = APIRouter(prefix="/llm-connections", tags=["llm"])
 
@@ -40,7 +38,7 @@ async def get_llm_connection(
 ) -> LLMConnectionRead:
     try:
         entity = await service.get(connection_id)
-    except LLMConnectionNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "llm connection not found") from None
     return LLMConnectionRead.model_validate(entity)
 
@@ -53,7 +51,7 @@ async def update_llm_connection(
 ) -> LLMConnectionRead:
     try:
         entity = await service.update(connection_id, payload)
-    except LLMConnectionNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "llm connection not found") from None
     return LLMConnectionRead.model_validate(entity)
 
@@ -65,5 +63,5 @@ async def delete_llm_connection(
 ) -> None:
     try:
         await service.delete(connection_id)
-    except LLMConnectionNotFoundError:
+    except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "llm connection not found") from None
