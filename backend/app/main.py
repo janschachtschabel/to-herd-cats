@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app.api.agents import router as agents_router
 from app.api.health import router as health_router
+from app.api.llm_connections import router as llm_connections_router
 from app.core.db import make_engine, make_session_factory
 from app.core.settings import Settings, get_settings
 
@@ -30,6 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.include_router(health_router)
     app.include_router(agents_router)
+    app.include_router(llm_connections_router)
     return app
 
 

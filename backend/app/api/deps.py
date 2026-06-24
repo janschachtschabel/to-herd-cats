@@ -6,6 +6,7 @@ from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.agents import AgentService
+from app.services.llm_connections import LLMConnectionService
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -22,3 +23,10 @@ async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
 def get_agent_service(session: AsyncSession = Depends(get_session)) -> AgentService:
     """Build the agent service for a request, bound to its session."""
     return AgentService(session)
+
+
+def get_llm_connection_service(
+    session: AsyncSession = Depends(get_session),
+) -> LLMConnectionService:
+    """Build the LLM-connection service for a request, bound to its session."""
+    return LLMConnectionService(session)
