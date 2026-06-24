@@ -10,9 +10,11 @@ from app.services.channels import ChannelService
 from app.services.data_sources import DataSourceService
 from app.services.llm_connections import LLMConnectionService
 from app.services.mcp_servers import MCPServerService
+from app.services.roles import RoleService
 from app.services.skills import SkillService
 from app.services.templates import TemplateService
 from app.services.tools import ToolService
+from app.services.triggers import TriggerService
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -72,3 +74,13 @@ def get_template_service(
 def get_channel_service(session: AsyncSession = Depends(get_session)) -> ChannelService:
     """Build the channel service for a request, bound to its session."""
     return ChannelService(session)
+
+
+def get_trigger_service(session: AsyncSession = Depends(get_session)) -> TriggerService:
+    """Build the trigger service for a request, bound to its session."""
+    return TriggerService(session)
+
+
+def get_role_service(session: AsyncSession = Depends(get_session)) -> RoleService:
+    """Build the role service for a request, bound to its session."""
+    return RoleService(session)
