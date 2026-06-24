@@ -5,10 +5,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.agents import router as agents_router
+from app.api.channels import router as channels_router
+from app.api.data_sources import router as data_sources_router
 from app.api.health import router as health_router
 from app.api.llm_connections import router as llm_connections_router
 from app.api.mcp_servers import router as mcp_servers_router
 from app.api.skills import router as skills_router
+from app.api.templates import router as templates_router
 from app.api.tools import router as tools_router
 from app.core.db import make_engine, make_session_factory
 from app.core.settings import Settings, get_settings
@@ -38,6 +41,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(skills_router)
     app.include_router(mcp_servers_router)
     app.include_router(tools_router)
+    app.include_router(data_sources_router)
+    app.include_router(templates_router)
+    app.include_router(channels_router)
     return app
 
 

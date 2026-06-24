@@ -6,9 +6,12 @@ from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.agents import AgentService
+from app.services.channels import ChannelService
+from app.services.data_sources import DataSourceService
 from app.services.llm_connections import LLMConnectionService
 from app.services.mcp_servers import MCPServerService
 from app.services.skills import SkillService
+from app.services.templates import TemplateService
 from app.services.tools import ToolService
 
 
@@ -50,3 +53,22 @@ def get_mcp_server_service(
 def get_tool_service(session: AsyncSession = Depends(get_session)) -> ToolService:
     """Build the tool service for a request, bound to its session."""
     return ToolService(session)
+
+
+def get_data_source_service(
+    session: AsyncSession = Depends(get_session),
+) -> DataSourceService:
+    """Build the data-source service for a request, bound to its session."""
+    return DataSourceService(session)
+
+
+def get_template_service(
+    session: AsyncSession = Depends(get_session),
+) -> TemplateService:
+    """Build the template service for a request, bound to its session."""
+    return TemplateService(session)
+
+
+def get_channel_service(session: AsyncSession = Depends(get_session)) -> ChannelService:
+    """Build the channel service for a request, bound to its session."""
+    return ChannelService(session)
