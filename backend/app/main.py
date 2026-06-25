@@ -1,5 +1,6 @@
 """FastAPI application factory for the Agent Cockpit control API."""
 
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -20,18 +21,25 @@ from app.api.tools import router as tools_router
 from app.api.triggers import router as triggers_router
 from app.core.db import make_engine, make_session_factory
 from app.core.settings import Settings, get_settings
+from app.triggers.scheduler import start as start_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Build the engine and session factory on startup; dispose on shutdown."""
+    """Build engine + session factory and start the scheduler; clean up on exit."""
     settings: Settings = app.state.settings
     engine = make_engine(settings.database_url)
     app.state.engine = engine
     app.state.session_factory = make_session_factory(engine)
+    scheduler_task = start_scheduler(app.state.session_factory)
     try:
         yield
     finally:
+        scheduler_task.cancel()
+        try:
+            await scheduler_task
+        except asyncio.CancelledError:
+            pass
         await engine.dispose()
 
 

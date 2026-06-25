@@ -1,6 +1,8 @@
 """ORM model for a Trigger — how/when an agent runs (on_demand/scheduled/...)."""
 
-from sqlalchemy import JSON, Boolean, ForeignKey, String
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
@@ -20,3 +22,5 @@ class Trigger(UuidAuditMixin, Base):
     # {interval, stop_condition, budget} for the autonomous loop mode.
     loop_config: Mapped[dict] = mapped_column(JSON, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Stamped by the scheduler after each fire; the base for the next cron calc.
+    last_fired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)

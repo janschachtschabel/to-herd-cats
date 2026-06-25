@@ -85,7 +85,9 @@ class RunService:
                 rendered = render_output(template.render_template, comparison)
         return {"comparison": comparison, "rendered": rendered}
 
-    async def create_and_execute(self, agent_id: str, payload: RunInput) -> Run:
+    async def create_and_execute(
+        self, agent_id: str, payload: RunInput, trigger_id: str | None = None
+    ) -> Run:
         agent = await self._agents.get(agent_id)
         if agent is None:
             raise EntityNotFoundError(agent_id)
@@ -93,7 +95,12 @@ class RunService:
         resolved = await self._resolve_tools(agent)
         sources = await self._resolve_data_sources(agent)
 
-        run = Run(agent_id=agent_id, status="queued", input=payload.model_dump(mode="json"))
+        run = Run(
+            agent_id=agent_id,
+            trigger_id=trigger_id,
+            status="queued",
+            input=payload.model_dump(mode="json"),
+        )
         await self._runs.add(run)
         await self._session.commit()
 

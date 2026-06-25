@@ -39,3 +39,9 @@ async def db_session(engine):
     factory = make_session_factory(engine)
     async with factory() as session:
         yield session
+
+
+@pytest_asyncio.fixture
+async def session_factory(engine):
+    """A session factory bound to the test engine (for background-task code)."""
+    return make_session_factory(engine)
