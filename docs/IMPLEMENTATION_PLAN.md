@@ -93,8 +93,19 @@
   Also: **skill resolution** in the runtime — match enabled skills by
   `description` (progressive disclosure) and inject; fixed commands invoke a
   skill deterministically.
+- **Data & retrieval:** the runtime also queries the agent's **data sources**
+  (vector/graph/wiki/relational) for grounding — the knowledge-grounded scenario
+  (CLAUDE.md §2). Data sources reach the runtime via MCP or a thin driver adapter.
+- **Agent memory:** short-term (run/conversation context) and long-term (vector
+  recall via the app DB's `sqlite-vec` / `pgvector`, keyed by
+  `Agent.memory.vector_store_ref`) — this is where the embedded vector store earns
+  its place.
+- **Note:** `Run` and `InboxItem` are new entities here (new migration). M4 is the
+  largest milestone — deliver it in sub-increments (runtime → postbox → structured
+  output → retrieval → memory), verifying each.
 - **Verify:** end-to-end run with a mock LLM; an interrupt/resume cycle; a
-  rendered report from typed JSON.
+  rendered report from typed JSON; a retrieval-grounded answer; long-term memory
+  recall across two runs.
 
 ### M4b — Executable skills (sandboxed) — security-hardened
 - **Goal:** run a skill's bundled scripts safely.
@@ -115,10 +126,16 @@
   autonomous loop stops on its condition.
 
 ### M6 — Observability
-- **Goal:** visibility into cost/tokens/traces.
+- **Goal:** visibility into cost/tokens/traces, plus outbound delivery of postbox
+  items to channels.
 - **Plan:** `integrations/langfuse` + OpenTelemetry; `Run.metrics`
   (tokens/cost/duration) + `trace_id`.
-- **Verify:** a trace/metric is produced (asserted against a mock/local Langfuse).
+- **Channel delivery:** when an `InboxItem` carries `channel_ids`, route it to
+  those Channels (Slack/email/webhook/matrix, via MCP or a thin adapter). Channel
+  *config* is already M2; this adds the *delivery* behaviour (CLAUDE.md §3,
+  "routing of postbox items to channels"). Start with one kind, extend by adapter.
+- **Verify:** a trace/metric is produced (mock/local Langfuse); an `InboxItem` is
+  delivered to a mock channel.
 
 ### M7 — Frontend cockpit (Angular 21) + skill authoring
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
@@ -147,6 +164,37 @@
 - **Plan:** run the full suite against the `--profile postgres` DB;
   `docker-compose.prod.yml`; sync README / CLAUDE.md / this plan.
 - **Verify:** the whole suite green on both DB backends — both outputs shown.
+
+## Cross-cutting concerns (span milestones)
+
+- **CI pipeline.** GitHub Actions on push/PR: `ruff check` + `ruff format
+  --check` + `uv run pytest` for the backend, and `ng test` + `ng build` once the
+  frontend exists. Set up early so "green by default" holds; gate merges on it.
+- **API error model.** One consistent error shape; map domain errors and
+  `IntegrityError` (e.g. a bad foreign key) to a clean 4xx, never a 500 with a
+  stack trace (CLAUDE.md §11). Subsumes the bad-FK follow-up below.
+- **CORS.** Allowed-origins config for the Angular SPA → API (needed from M7);
+  keep it tight and env-driven.
+- **Security review pass.** Route auth, secret handling, skill execution (M4b)
+  and input boundaries through an extra review before "done" (CLAUDE.md §11).
+- **Audit trail.** Entities already carry created/updated timestamps; add
+  who-did-what for sensitive actions (approvals, role changes) when auth lands
+  (M8).
+- **Dev infrastructure.** `infra/docker-compose.yml` grows by milestone — Postgres
+  (parity), Redis (M5 events), Langfuse (M6), Keycloak (M8) — not only at M9.
+
+## Testing approach
+
+- **Pyramid per entity:** repository tests (real tmp SQLite) → service tests →
+  API tests (httpx against the ASGI app, no network) → runtime tests (mock LLM,
+  deterministic). Frontend: Vitest component tests.
+- **External services mocked** in unit tests (LiteLLM, MCP, Langfuse, Keycloak);
+  one optional integration test each against a real local instance.
+- **Isolation:** each test gets a fresh tmp SQLite DB with the schema created from
+  ORM metadata; `alembic check` guards against model/migration drift.
+- **Both backends:** the suite must pass on SQLite and (M9 / CI) PostgreSQL.
+- **Pin behaviour before implementing** where feasible; never weaken a test to go
+  green (CLAUDE.md §9.10).
 
 ## Open technical decisions & defaults
 
