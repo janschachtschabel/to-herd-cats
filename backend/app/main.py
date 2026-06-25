@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.api.agents import router as agents_router
 from app.api.channels import router as channels_router
 from app.api.data_sources import router as data_sources_router
+from app.api.events import router as events_router
 from app.api.health import router as health_router
 from app.api.inbox import router as inbox_router
 from app.api.llm_connections import router as llm_connections_router
@@ -65,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(settings_router)
     app.include_router(runs_router)
     app.include_router(inbox_router)
+    app.include_router(events_router)
     return app
 
 
