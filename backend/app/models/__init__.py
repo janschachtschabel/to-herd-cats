@@ -6,6 +6,7 @@ from app.models.data_source import DataSource
 from app.models.llm_connection import LLMConnection
 from app.models.mcp_server import MCPServer
 from app.models.role import Role
+from app.models.run import Run
 from app.models.setting import Setting
 from app.models.skill import Skill
 from app.models.template import Template
@@ -19,6 +20,7 @@ __all__ = [
     "LLMConnection",
     "MCPServer",
     "Role",
+    "Run",
     "Setting",
     "Skill",
     "Template",

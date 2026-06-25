@@ -11,6 +11,7 @@ from app.api.health import router as health_router
 from app.api.llm_connections import router as llm_connections_router
 from app.api.mcp_servers import router as mcp_servers_router
 from app.api.roles import router as roles_router
+from app.api.runs import router as runs_router
 from app.api.settings import router as settings_router
 from app.api.skills import router as skills_router
 from app.api.templates import router as templates_router
@@ -50,6 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(triggers_router)
     app.include_router(roles_router)
     app.include_router(settings_router)
+    app.include_router(runs_router)
     return app
 
 
