@@ -161,7 +161,10 @@
 - **Verify:** a trace/metric is produced (mock/local Langfuse); an `InboxItem` is
   delivered to a mock channel.
 
-### M7 — Frontend cockpit (Angular 22) + skill authoring
+### M7 — Frontend cockpit (Angular 22) + skill authoring — IN PROGRESS
+- **Status:** ✅ M7.1a backend CORS + Angular 22 adopted (latest stable; was 21);
+  next: scaffold (zoneless/signals/standalone + Material 3) + core API client +
+  the Agents vertical slice, then CRUD shells, schema-form, postbox UI, skills.
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 22 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -289,3 +292,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M5.4: persistent SQLite checkpointer — completes M5 | `8951fd3` |
 | 2026-06-25 | M6.1: metrics summary (cost/tokens visibility) | `5689aba` |
 | 2026-06-25 | M6.2: channel delivery of postbox items — completes M6 | `3418289` |
+| 2026-06-25 | M7.1a: backend CORS + adopt Angular 22 | `f75743f` |
