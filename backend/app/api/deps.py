@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.agents import AgentService
 from app.services.channels import ChannelService
 from app.services.data_sources import DataSourceService
+from app.services.inbox import InboxService
 from app.services.llm_connections import LLMConnectionService
 from app.services.mcp_servers import MCPServerService
 from app.services.roles import RoleService
@@ -96,3 +97,8 @@ def get_setting_service(session: AsyncSession = Depends(get_session)) -> Setting
 def get_run_service(session: AsyncSession = Depends(get_session)) -> RunService:
     """Build the run service for a request, bound to its session."""
     return RunService(session)
+
+
+def get_inbox_service(session: AsyncSession = Depends(get_session)) -> InboxService:
+    """Build the inbox (postbox) service for a request, bound to its session."""
+    return InboxService(session)

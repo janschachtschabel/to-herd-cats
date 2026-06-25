@@ -3,6 +3,7 @@
 from app.models.agent import Agent
 from app.models.channel import Channel
 from app.models.data_source import DataSource
+from app.models.inbox_item import InboxItem
 from app.models.llm_connection import LLMConnection
 from app.models.mcp_server import MCPServer
 from app.models.role import Role
@@ -17,6 +18,7 @@ __all__ = [
     "Agent",
     "Channel",
     "DataSource",
+    "InboxItem",
     "LLMConnection",
     "MCPServer",
     "Role",
