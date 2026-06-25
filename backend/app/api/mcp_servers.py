@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_mcp_server_service
+from app.integrations.mcp_gateway import MCPDiscoveryError
 from app.schemas.mcp_server import MCPServerCreate, MCPServerRead, MCPServerUpdate
 from app.services.base import EntityNotFoundError
 from app.services.mcp_servers import MCPServerService
@@ -59,3 +60,17 @@ async def delete_mcp_server(
         await service.delete(server_id)
     except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "mcp server not found") from None
+
+
+@router.post("/{server_id}/discover", response_model=MCPServerRead)
+async def discover_mcp_server(
+    server_id: str, service: MCPServerService = Depends(get_mcp_server_service)
+) -> MCPServerRead:
+    """Connect to the server, cache its tools, and update its status."""
+    try:
+        server = await service.discover(server_id)
+    except EntityNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "mcp server not found") from None
+    except MCPDiscoveryError as exc:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(exc)) from None
+    return MCPServerRead.model_validate(server)
