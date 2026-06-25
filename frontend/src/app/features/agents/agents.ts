@@ -5,9 +5,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
 
 import { Agent } from './agent';
 import { AgentsApi } from './agents-api';
+
+const DEFAULT_GOAL = 'Führe deine konfigurierte Aufgabe aus.';
 
 /** Lists the agents from the backend and creates new ones.
 
@@ -28,6 +31,7 @@ import { AgentsApi } from './agents-api';
 })
 export class Agents {
   private readonly api = inject(AgentsApi);
+  private readonly router = inject(Router);
 
   readonly agents = signal<Agent[]>([]);
   readonly loading = signal(true);
@@ -67,6 +71,14 @@ export class Agents {
         this.reload();
       },
       error: () => this.error.set('Agent konnte nicht erstellt werden.'),
+    });
+  }
+
+  run(agent: Agent): void {
+    this.error.set(null);
+    this.api.runAgent(agent.id, agent.goal?.trim() || DEFAULT_GOAL).subscribe({
+      next: () => this.router.navigateByUrl('/runs'),
+      error: () => this.error.set('Run konnte nicht gestartet werden.'),
     });
   }
 }

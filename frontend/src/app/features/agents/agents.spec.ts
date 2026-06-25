@@ -1,36 +1,60 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 
 import { Agent } from './agent';
 import { Agents } from './agents';
 import { AgentsApi } from './agents-api';
 
-function setup(agents: Agent[]) {
+function setup(agents: Agent[], extra: Partial<AgentsApi> = {}) {
   const api: Partial<AgentsApi> = {
     listAgents: () => of(agents),
     createAgent: () => of({} as Agent),
+    runAgent: () => of({}),
+    ...extra,
   };
   TestBed.configureTestingModule({
     imports: [Agents],
-    providers: [{ provide: AgentsApi, useValue: api }],
+    providers: [{ provide: AgentsApi, useValue: api }, provideRouter([])],
   });
   const fixture = TestBed.createComponent(Agents);
   fixture.detectChanges();
-  return fixture.nativeElement as HTMLElement;
+  return fixture;
 }
 
 describe('Agents', () => {
   it('renders agents returned by the API', () => {
     const el = setup([
       { id: '1', name: 'Researcher', status: 'active', goal: 'find things', created_at: '' },
-    ]);
+    ]).nativeElement as HTMLElement;
     expect(el.textContent).toContain('Researcher');
     expect(el.textContent).toContain('active');
     expect(el.textContent).toContain('find things');
   });
 
   it('shows an empty state when there are no agents', () => {
-    const el = setup([]);
+    const el = setup([]).nativeElement as HTMLElement;
     expect(el.textContent).toContain('Noch keine Agenten');
+  });
+
+  it('starts a run with the agent goal and navigates to the runs view', () => {
+    const calls: Array<[string, string]> = [];
+    const fixture = setup([], {
+      runAgent: (id: string, goal: string) => {
+        calls.push([id, goal]);
+        return of({});
+      },
+    });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    fixture.componentInstance.run({
+      id: 'a1',
+      name: 'R',
+      status: 'active',
+      goal: 'do x',
+      created_at: '',
+    });
+    expect(calls).toEqual([['a1', 'do x']]);
+    expect(navigate).toHaveBeenCalledWith('/runs');
   });
 });

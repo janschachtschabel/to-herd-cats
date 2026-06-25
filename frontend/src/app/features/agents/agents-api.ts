@@ -17,4 +17,8 @@ export class AgentsApi {
   createAgent(payload: AgentCreate): Observable<Agent> {
     return this.http.post<Agent>(`${API_BASE}/agents`, payload);
   }
+
+  runAgent(agentId: string, goal: string): Observable<unknown> {
+    return this.http.post(`${API_BASE}/agents/${agentId}/runs`, { goal });
+  }
 }
