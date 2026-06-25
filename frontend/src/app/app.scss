@@ -1,6 +1,18 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-shell {
+  flex: 1;
+}
+
 .app-main {
-  display: block;
-  max-width: 960px;
-  margin: 0 auto;
   padding: 1.5rem;
+  max-width: 960px;
+}
+
+.active {
+  background: var(--mat-sys-secondary-container);
 }
