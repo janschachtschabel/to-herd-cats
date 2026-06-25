@@ -1,0 +1,50 @@
+<section class="entity-form">
+  <h2>{{ title() }} – neu</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="save()">
+    @for (field of fields(); track field.key) {
+      @switch (field.type) {
+        @case ('checkbox') {
+          <div>
+            <mat-checkbox [name]="field.key" [(ngModel)]="model[field.key]">{{
+              field.label
+            }}</mat-checkbox>
+          </div>
+        }
+        @case ('select') {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label }}</mat-label>
+            <mat-select
+              [name]="field.key"
+              [(ngModel)]="model[field.key]"
+              [required]="field.required ?? false"
+            >
+              @for (opt of field.options ?? []; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        @default {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label }}</mat-label>
+            <input
+              matInput
+              [name]="field.key"
+              [(ngModel)]="model[field.key]"
+              [required]="field.required ?? false"
+            />
+          </mat-form-field>
+        }
+      }
+    }
+    <div class="actions">
+      <button mat-flat-button type="submit">Speichern</button>
+      <a mat-button [routerLink]="'/' + path()">Abbrechen</a>
+    </div>
+  </form>
+</section>

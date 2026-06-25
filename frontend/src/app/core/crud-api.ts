@@ -19,4 +19,8 @@ export class CrudApi {
   remove(path: string, id: string): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/${path}/${id}`);
   }
+
+  create<T>(path: string, payload: unknown): Observable<T> {
+    return this.http.post<T>(`${API_BASE}/${path}`, payload);
+  }
 }

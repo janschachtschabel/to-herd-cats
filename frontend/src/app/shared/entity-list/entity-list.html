@@ -1,5 +1,10 @@
 <section class="entity-list">
-  <h2>{{ title() }}</h2>
+  <div class="list-header">
+    <h2>{{ title() }}</h2>
+    @if (creatable()) {
+      <a mat-flat-button [routerLink]="'/' + path() + '/new'">Neu</a>
+    }
+  </div>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>

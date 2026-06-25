@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+import { RouterLink } from '@angular/router';
 
 import { CrudApi } from '../../core/crud-api';
 
@@ -31,7 +32,7 @@ interface Row {
     schema separately (M7.3). */
 @Component({
   selector: 'app-entity-list',
-  imports: [MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule],
+  imports: [RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule],
   templateUrl: './entity-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -41,6 +42,7 @@ export class EntityList implements OnInit {
   readonly title = input.required<string>();
   readonly path = input.required<string>();
   readonly columns = input.required<Column[]>();
+  readonly creatable = input(false);
 
   readonly rows = signal<Row[]>([]);
   readonly loading = signal(true);
