@@ -131,10 +131,12 @@
 - **Verify:** a script runs inside the sandbox; an out-of-scope action is denied;
   an approval gate pauses execution.
 
-### M5 — Triggers & durability — IN PROGRESS
+### M5 — Triggers & durability — DONE
 - **Status:** ✅ M5.1 scheduled (in-process cron) · ✅ M5.2 autonomous (budget
-  loop) · ✅ M5.3 event (in-process dispatch); remaining: M5.4 durable
-  checkpointer.
+  loop) · ✅ M5.3 event (in-process dispatch) · ✅ M5.4 persistent SQLite
+  checkpointer — M5 complete. Durable-exec adapter (Hatchet/Temporal) and a
+  Redis event bus stay deferred behind their interfaces; the Postgres saver
+  lands with M9.
 - **Goal:** all four run modes (CLAUDE.md §3).
 - **Plan:** `triggers/` in-process scheduler (dev, cron) + event handlers +
   **pluggable** durable-execution adapter interface (Hatchet/Temporal optional;
@@ -243,6 +245,10 @@ integrations "just in case". Per milestone, only what the verification requires.
   not yet done.
 - **`deps.py` providers.** ~10 near-identical service providers; a candidate to
   factor once it earns its keep.
+- **M5 deferrals.** Autonomous NL `stop_condition` (LLM-judged) and a durable loop
+  lifecycle (restart/cancel — loops are fire-and-forget); injecting an event's
+  payload into the fired run's prompt; a durable-exec adapter (Hatchet/Temporal)
+  and Redis event bus behind their interfaces. Trigger timezones default to UTC.
 
 ## Progress log
 
@@ -272,3 +278,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M5.1: cron scheduler (scheduled-mode triggers) | `a68f9ac` |
 | 2026-06-25 | M5.2: autonomous-mode triggers (budget loop) | `83f7bb7` |
 | 2026-06-25 | M5.3: event-mode triggers (in-process dispatch) | `cc46878` |
+| 2026-06-25 | M5.4: persistent SQLite checkpointer — completes M5 | `8951fd3` |
