@@ -133,7 +133,8 @@
 
 ### M5 — Triggers & durability — IN PROGRESS
 - **Status:** ✅ M5.1 scheduled (in-process cron) · ✅ M5.2 autonomous (budget
-  loop); remaining: M5.3 event · M5.4 durable checkpointer.
+  loop) · ✅ M5.3 event (in-process dispatch); remaining: M5.4 durable
+  checkpointer.
 - **Goal:** all four run modes (CLAUDE.md §3).
 - **Plan:** `triggers/` in-process scheduler (dev, cron) + event handlers +
   **pluggable** durable-execution adapter interface (Hatchet/Temporal optional;
@@ -270,3 +271,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M4.6: agent memory (cross-run recall) — completes M4 | `525393d` |
 | 2026-06-25 | M5.1: cron scheduler (scheduled-mode triggers) | `a68f9ac` |
 | 2026-06-25 | M5.2: autonomous-mode triggers (budget loop) | `83f7bb7` |
+| 2026-06-25 | M5.3: event-mode triggers (in-process dispatch) | `cc46878` |
