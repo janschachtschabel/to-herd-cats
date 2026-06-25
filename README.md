@@ -51,7 +51,7 @@ Cross-cutting concerns: Auth/RBAC and Observability.
 | LLM gateway | LiteLLM (one endpoint, virtual keys, cost tracking) |
 | MCP gateway | MCPJungle; ContextForge to wrap REST/gRPC as MCP |
 | Persistence | SQLite + sqlite-vec (single node) · PostgreSQL + pgvector (cluster) |
-| Frontend | Angular 22 (zoneless, signals-first, standalone), Angular Material 3 |
+| Frontend | Angular 21 (zoneless, signals-first, standalone), Angular Material 3 |
 | Observability | Langfuse + OpenTelemetry |
 | Auth | Keycloak (OIDC) |
 
@@ -61,7 +61,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the full brief, domain model and hard rules.
 
 ```
 backend/    # FastAPI control API, services, repositories, LangGraph runtime
-frontend/   # Angular 22 cockpit UI + embeddable Web Components
+frontend/   # Angular 21 cockpit UI + embeddable Web Components
 infra/      # docker-compose (SQLite default; --profile postgres for cluster)
 ```
 

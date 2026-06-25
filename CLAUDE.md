@@ -119,7 +119,8 @@ Connected data sources (registered as DataSource records, NOT the app DB)
   thin driver adapter
 
 Frontend
-- Angular 22: zoneless (default, no zone.js), signals-first, standalone
+- Angular 21 (LTS — the dev Node v22.14 can't run the Angular 22 CLI, which
+  needs >=22.22.3; bump after a Node upgrade): zoneless (no zone.js), signals-first, standalone
   components, new control flow (@if / @for / @switch)
 - Angular Material 3 (M3) + Angular CDK; OnPush on every component
 - Embeddable widgets via Angular Elements (createCustomElement) → Web Components
