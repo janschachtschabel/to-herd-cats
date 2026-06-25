@@ -145,7 +145,10 @@
 - **Verify:** a cron-scheduled run fires (mocked clock); an event trigger; an
   autonomous loop stops on its condition.
 
-### M6 — Observability
+### M6 — Observability — IN PROGRESS
+- **Status:** ✅ M6.1 metrics summary (cost/tokens via `GET /metrics/summary`);
+  remaining: M6.2 channel delivery. Tracing (Langfuse/OTel) + `trace_id` are
+  deferred — the cost/token half is covered by aggregating `Run.metrics`.
 - **Goal:** visibility into cost/tokens/traces, plus outbound delivery of postbox
   items to channels.
 - **Plan:** `integrations/langfuse` + OpenTelemetry; `Run.metrics`
@@ -279,3 +282,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M5.2: autonomous-mode triggers (budget loop) | `83f7bb7` |
 | 2026-06-25 | M5.3: event-mode triggers (in-process dispatch) | `cc46878` |
 | 2026-06-25 | M5.4: persistent SQLite checkpointer — completes M5 | `8951fd3` |
+| 2026-06-25 | M6.1: metrics summary (cost/tokens visibility) | `5689aba` |
