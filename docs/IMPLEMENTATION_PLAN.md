@@ -263,6 +263,16 @@ integrations "just in case". Per milestone, only what the verification requires.
   `Run.trace_id`; non-MCP channel adapters (raw webhook, SMTP email) — only
   MCP-backed `send` delivery exists. Channel delivery is synchronous best-effort
   (a background/retry queue is a later concern).
+- **Review follow-ups (found, not yet fixed).** `Trigger.timezone` is accepted but
+  the scheduler always computes in UTC (non-UTC crons fire at the wrong wall time);
+  `cors_origins` is JSON-only via pydantic-settings (a bare comma string in
+  `COCKPIT_CORS_ORIGINS` raises at startup). Test-coverage gaps: `litellm_gateway.embed`
+  mapping (always stubbed), channel-delivery routing branches (empty / `in` / no-MCP),
+  the review `edit` output action, the `MAX_ITERATIONS` tool cap, autonomous cost/token
+  budgets, the persistent checkpointer against the real graph + the lifespan wiring;
+  frontend error/reload branches (entity-list/form, inbox non-pending, runs forkJoin
+  error). The bootstrap smoke test passes with or without the zoneless provider in
+  jsdom, so a real-browser load is the only definitive bootstrap check.
 
 ## Progress log
 
@@ -304,3 +314,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M7.3a: config-driven create forms (entity-form) | `e82b35d` |
 | 2026-06-25 | M7.4: postbox UI (HITL responses) | `142c9a8` |
 | 2026-06-25 | M7.5: runs & metrics view (observability) | `d7b4b57` |
+| 2026-06-25 | review fixes: scheduler/events resilience, memory ranking test, frontend bootstrap + run-agent UI | `d830400`, `56213fa` |
