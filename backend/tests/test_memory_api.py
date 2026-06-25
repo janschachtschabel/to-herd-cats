@@ -6,6 +6,7 @@ same agent recalls it per the agent's memory mode (long / short / none).
 """
 
 from app.integrations.litellm_gateway import CompletionResult
+from app.runtime.memory import cosine
 
 
 async def _make_connection(client) -> str:
@@ -32,9 +33,15 @@ def _join(messages) -> str:
     return " ".join(m["content"] for m in messages if isinstance(m.get("content"), str))
 
 
-async def test_long_term_memory_recall(client, monkeypatch):
-    # A toy embedding: France-related text maps to one axis, everything else to
-    # another, so a France query is closest to the stored France memory.
+def test_cosine_similarity_handles_edge_cases():
+    assert cosine([1.0, 0.0], [1.0, 0.0]) == 1.0
+    assert cosine([1.0, 0.0], [0.0, 1.0]) == 0.0
+    assert cosine([], [1.0]) == 0.0  # length mismatch
+    assert cosine([0.0, 0.0], [1.0, 1.0]) == 0.0  # zero norm
+
+
+async def test_long_term_memory_recall_ranks_by_similarity(client, monkeypatch):
+    # France-related text maps to one axis, everything else to another.
     async def fake_embed(connection, text):
         france = "france" in text.lower() or "paris" in text.lower()
         return [1.0, 0.0] if france else [0.0, 1.0]
@@ -45,23 +52,31 @@ async def test_long_term_memory_recall(client, monkeypatch):
 
     async def fake_complete(connection, messages, tools=None, **kw):
         prompts.append(messages)
-        return CompletionResult(
-            content="Paris is the capital of France.", model="mock", total_tokens=3
+        goal = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
+        answer = (
+            "Paris is the capital of France."
+            if "france" in goal.lower()
+            else "Two plus two is four."
         )
+        return CompletionResult(content=answer, model="mock", total_tokens=3)
 
     monkeypatch.setattr("app.runtime.graph.complete", fake_complete)
 
     conn = await _make_connection(client)
     agent = await _make_agent(client, conn, "long")
 
-    first = (await client.post(f"/agents/{agent}/runs", json={"goal": "capital of France?"})).json()
-    assert first["status"] == "completed"
+    # An unrelated memory (the distractor) plus one about France.
+    await client.post(f"/agents/{agent}/runs", json={"goal": "How much is two plus two?"})
+    await client.post(f"/agents/{agent}/runs", json={"goal": "What is the capital of France?"})
 
-    # A second, France-related run should recall the first interaction.
+    # A France query must rank the France memory above the unrelated distractor.
     await client.post(f"/agents/{agent}/runs", json={"goal": "tell me about France"})
     recalled = _join(prompts[-1])
     assert "Memory from past interactions" in recalled
     assert "Paris is the capital of France." in recalled
+    assert recalled.index("Paris is the capital of France.") < recalled.index(
+        "Two plus two is four."
+    )
 
 
 async def test_short_term_memory_recalls_recent(client, monkeypatch):

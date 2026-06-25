@@ -7,7 +7,7 @@ from app.schemas.inbox_item import InboxItemRead, InboxResponse
 from app.schemas.run import RunRead
 from app.services.base import EntityNotFoundError
 from app.services.inbox import InboxService
-from app.services.runs import InboxStateError, RunService
+from app.services.runs import InboxStateError, RunConfigError, RunService
 
 router = APIRouter(prefix="/inbox", tags=["inbox"])
 
@@ -44,4 +44,6 @@ async def respond_to_inbox(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "inbox item not found") from None
     except InboxStateError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from None
+    except RunConfigError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from None
     return RunRead.model_validate(run)

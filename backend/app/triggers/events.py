@@ -7,11 +7,15 @@ durable event bus (Redis Streams) behind this same interface is a follow-up;
 so is injecting the event payload into the fired run's prompt.
 """
 
+import logging
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.models.trigger import Trigger
 from app.repositories.triggers import SqlAlchemyTriggerRepository
 from app.triggers.runner import fire
+
+logger = logging.getLogger(__name__)
 
 
 def _filter_matches(event_filter: dict, payload: dict) -> bool:
@@ -44,7 +48,11 @@ async def dispatch(
 
     run_ids: list[str] = []
     for agent_id, trigger_id in targets:
-        run_id = await fire(factory, agent_id, trigger_id)
+        try:
+            run_id = await fire(factory, agent_id, trigger_id)
+        except Exception:  # one misconfigured trigger must not abort the dispatch
+            logger.exception("event fire failed for trigger %s", trigger_id)
+            continue
         if run_id:
             run_ids.append(run_id)
     return run_ids

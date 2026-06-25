@@ -54,14 +54,18 @@ async def run_due(factory: async_sessionmaker[AsyncSession], now: datetime) -> i
 
     Returns the number fired. The read session is released before firing so we
     never hold a read transaction open across the per-fire write sessions, which
-    SQLite would reject.
+    SQLite would reject. A failing fire is logged but neither aborts the tick nor
+    skips stamping - an unstamped trigger would otherwise re-fire every tick.
     """
     async with factory() as session:
         triggers = await SqlAlchemyTriggerRepository(session).list()
         due = [(t.agent_id, t.id) for t in due_triggers(triggers, now)]
 
     for agent_id, trigger_id in due:
-        await fire(factory, agent_id, trigger_id)
+        try:
+            await fire(factory, agent_id, trigger_id)
+        except Exception:
+            logger.exception("scheduled fire failed for trigger %s", trigger_id)
 
     if due:
         async with factory() as session:

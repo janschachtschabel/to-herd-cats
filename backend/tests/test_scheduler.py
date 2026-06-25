@@ -64,3 +64,37 @@ async def test_run_due_fires_scheduled_trigger(client, session_factory, monkeypa
 
     # last_fired_at is stamped, so an immediate re-tick does not double-fire.
     assert await run_due(session_factory, now) == 0
+
+
+async def test_run_due_is_resilient_to_a_failing_fire(client, session_factory, monkeypatch):
+    async def fake_complete(connection, messages, tools=None, **kw):
+        return CompletionResult(content="ok", model="mock", total_tokens=1)
+
+    monkeypatch.setattr("app.runtime.graph.complete", fake_complete)
+
+    conn = (
+        await client.post(
+            "/llm-connections", json={"name": "c", "provider_model": "openai/gpt-4o-mini"}
+        )
+    ).json()
+    good = (
+        await client.post(
+            "/agents", json={"name": "good", "goal": "x", "llm_connection_id": conn["id"]}
+        )
+    ).json()
+    # No LLM connection -> fire() raises RunConfigError inside the scheduler.
+    bad = (await client.post("/agents", json={"name": "bad", "goal": "x"})).json()
+    for agent in (good, bad):
+        await client.post(
+            "/triggers", json={"agent_id": agent["id"], "mode": "scheduled", "cron": "* * * * *"}
+        )
+
+    now = datetime.now(UTC).replace(microsecond=0) + timedelta(minutes=5)
+    assert await run_due(session_factory, now) == 2  # both due; the failure is swallowed
+
+    runs = (await client.get("/runs")).json()
+    assert len(runs) == 1  # only the well-configured agent produced a run
+    assert runs[0]["agent_id"] == good["id"]
+
+    # Both triggers are stamped, so the broken one does not re-fire next tick.
+    assert await run_due(session_factory, now) == 0
