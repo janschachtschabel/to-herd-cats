@@ -9,9 +9,7 @@ from app.core.secret_ref import is_secret_ref
 
 def _validate_secret_ref(value: str | None) -> str | None:
     if value is not None and not is_secret_ref(value):
-        raise ValueError(
-            "must be a secret reference like 'env:VAR_NAME', not a plaintext secret"
-        )
+        raise ValueError("must be a secret reference like 'env:VAR_NAME', not a plaintext secret")
     return value
 
 

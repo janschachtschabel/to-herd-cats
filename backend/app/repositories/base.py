@@ -5,17 +5,13 @@ PostgreSQL. Entity repositories subclass this, set ``model``, and add
 entity-specific queries as they appear.
 """
 
-from typing import Generic, TypeVar
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import Base
 
-ModelT = TypeVar("ModelT", bound=Base)
 
-
-class BaseRepository(Generic[ModelT]):
+class BaseRepository[ModelT: Base]:
     model: type[ModelT]
 
     def __init__(self, session: AsyncSession) -> None:
@@ -30,9 +26,7 @@ class BaseRepository(Generic[ModelT]):
         return await self._session.get(self.model, entity_id)
 
     async def list(self) -> list[ModelT]:
-        result = await self._session.execute(
-            select(self.model).order_by(self.model.created_at)
-        )
+        result = await self._session.execute(select(self.model).order_by(self.model.created_at))
         return list(result.scalars().all())
 
     async def delete(self, entity: ModelT) -> None:

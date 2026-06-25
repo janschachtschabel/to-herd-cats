@@ -27,9 +27,7 @@ async def list_skills(
 
 
 @router.get("/{skill_id}", response_model=SkillRead)
-async def get_skill(
-    skill_id: str, service: SkillService = Depends(get_skill_service)
-) -> SkillRead:
+async def get_skill(skill_id: str, service: SkillService = Depends(get_skill_service)) -> SkillRead:
     try:
         entity = await service.get(skill_id)
     except EntityNotFoundError:
@@ -51,9 +49,7 @@ async def update_skill(
 
 
 @router.delete("/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_skill(
-    skill_id: str, service: SkillService = Depends(get_skill_service)
-) -> None:
+async def delete_skill(skill_id: str, service: SkillService = Depends(get_skill_service)) -> None:
     try:
         await service.delete(skill_id)
     except EntityNotFoundError:

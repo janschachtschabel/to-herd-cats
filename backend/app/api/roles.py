@@ -27,9 +27,7 @@ async def list_roles(
 
 
 @router.get("/{role_id}", response_model=RoleRead)
-async def get_role(
-    role_id: str, service: RoleService = Depends(get_role_service)
-) -> RoleRead:
+async def get_role(role_id: str, service: RoleService = Depends(get_role_service)) -> RoleRead:
     try:
         entity = await service.get(role_id)
     except EntityNotFoundError:
@@ -51,9 +49,7 @@ async def update_role(
 
 
 @router.delete("/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_role(
-    role_id: str, service: RoleService = Depends(get_role_service)
-) -> None:
+async def delete_role(role_id: str, service: RoleService = Depends(get_role_service)) -> None:
     try:
         await service.delete(role_id)
     except EntityNotFoundError:

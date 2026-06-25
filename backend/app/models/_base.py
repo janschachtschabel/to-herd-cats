@@ -23,9 +23,7 @@ class UuidAuditMixin:
     """String UUID primary key plus created_at / updated_at audit columns."""
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )

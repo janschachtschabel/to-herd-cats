@@ -25,9 +25,7 @@ async def test_reject_invalid_format(client):
 
 
 async def test_crud_roundtrip(client):
-    created = (
-        await client.post("/templates", json={"name": "T", "kind": "comparison"})
-    ).json()
+    created = (await client.post("/templates", json={"name": "T", "kind": "comparison"})).json()
     tid = created["id"]
     assert (await client.get(f"/templates/{tid}")).status_code == 200
     upd = await client.patch(f"/templates/{tid}", json={"format": "html"})

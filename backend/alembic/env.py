@@ -7,10 +7,10 @@ alembic.ini), and target metadata comes from the shared declarative Base.
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 import app.models  # noqa: F401  -- register every model on Base.metadata
+from alembic import context
 from app.core.db import Base
 from app.core.settings import get_settings
 
@@ -38,9 +38,7 @@ def run_migrations_offline() -> None:
 
 
 def _do_run_migrations(connection) -> None:
-    context.configure(
-        connection=connection, target_metadata=target_metadata, compare_type=True
-    )
+    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
     with context.begin_transaction():
         context.run_migrations()
 

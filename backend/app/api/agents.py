@@ -27,9 +27,7 @@ async def list_agents(
 
 
 @router.get("/{agent_id}", response_model=AgentRead)
-async def get_agent(
-    agent_id: str, service: AgentService = Depends(get_agent_service)
-) -> AgentRead:
+async def get_agent(agent_id: str, service: AgentService = Depends(get_agent_service)) -> AgentRead:
     try:
         agent = await service.get(agent_id)
     except EntityNotFoundError:
@@ -51,9 +49,7 @@ async def update_agent(
 
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_agent(
-    agent_id: str, service: AgentService = Depends(get_agent_service)
-) -> None:
+async def delete_agent(agent_id: str, service: AgentService = Depends(get_agent_service)) -> None:
     try:
         await service.delete(agent_id)
     except EntityNotFoundError:

@@ -10,9 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="COCKPIT_", env_file=".env", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_prefix="COCKPIT_", env_file=".env", extra="ignore")
 
     app_name: str = "to-herd-cats"
     debug: bool = False

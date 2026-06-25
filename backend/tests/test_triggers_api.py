@@ -41,9 +41,7 @@ async def test_reject_invalid_mode(client):
 
 async def test_cascade_delete_with_agent(client):
     agent_id = await _make_agent(client)
-    trig = (
-        await client.post("/triggers", json={"agent_id": agent_id, "mode": "on_demand"})
-    ).json()
+    trig = (await client.post("/triggers", json={"agent_id": agent_id, "mode": "on_demand"})).json()
     # Deleting the agent cascades to its triggers (DB-level ON DELETE CASCADE).
     assert (await client.delete(f"/agents/{agent_id}")).status_code == 204
     assert (await client.get(f"/triggers/{trig['id']}")).status_code == 404

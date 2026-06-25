@@ -27,9 +27,7 @@ async def list_tools(
 
 
 @router.get("/{tool_id}", response_model=ToolRead)
-async def get_tool(
-    tool_id: str, service: ToolService = Depends(get_tool_service)
-) -> ToolRead:
+async def get_tool(tool_id: str, service: ToolService = Depends(get_tool_service)) -> ToolRead:
     try:
         entity = await service.get(tool_id)
     except EntityNotFoundError:
@@ -51,9 +49,7 @@ async def update_tool(
 
 
 @router.delete("/{tool_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_tool(
-    tool_id: str, service: ToolService = Depends(get_tool_service)
-) -> None:
+async def delete_tool(tool_id: str, service: ToolService = Depends(get_tool_service)) -> None:
     try:
         await service.delete(tool_id)
     except EntityNotFoundError:

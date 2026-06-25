@@ -11,9 +11,7 @@ async def test_create_builtin_tool_without_server(client):
 
 
 async def test_create_mcp_tool_links_to_server(client):
-    server = (
-        await client.post("/mcp-servers", json={"name": "S", "transport": "stdio"})
-    ).json()
+    server = (await client.post("/mcp-servers", json={"name": "S", "transport": "stdio"})).json()
     resp = await client.post(
         "/tools",
         json={

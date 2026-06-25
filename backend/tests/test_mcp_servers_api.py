@@ -28,9 +28,7 @@ async def test_reject_plaintext_credentials(client):
 
 
 async def test_reject_invalid_transport(client):
-    resp = await client.post(
-        "/mcp-servers", json={"name": "X", "transport": "carrier-pigeon"}
-    )
+    resp = await client.post("/mcp-servers", json={"name": "X", "transport": "carrier-pigeon"})
     assert resp.status_code == 422
 
 
@@ -48,9 +46,7 @@ async def test_crud_roundtrip(client):
     sid = created["id"]
 
     assert (await client.get(f"/mcp-servers/{sid}")).status_code == 200
-    upd = await client.patch(
-        f"/mcp-servers/{sid}", json={"url": "https://mcp2.example.org"}
-    )
+    upd = await client.patch(f"/mcp-servers/{sid}", json={"url": "https://mcp2.example.org"})
     assert upd.json()["url"] == "https://mcp2.example.org"
     assert {s["name"] for s in (await client.get("/mcp-servers")).json()} == {"S"}
     assert (await client.delete(f"/mcp-servers/{sid}")).status_code == 204

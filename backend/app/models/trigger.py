@@ -11,9 +11,7 @@ class Trigger(UuidAuditMixin, Base):
     __tablename__ = "triggers"
 
     # A trigger belongs to one agent; remove it when the agent is removed.
-    agent_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("agents.id", ondelete="CASCADE")
-    )
+    agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id", ondelete="CASCADE"))
     mode: Mapped[str] = mapped_column(String(16))  # on_demand|scheduled|event|autonomous
     cron: Mapped[str | None] = mapped_column(String(100), default=None)
     timezone: Mapped[str | None] = mapped_column(String(64), default=None)

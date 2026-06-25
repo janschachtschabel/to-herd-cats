@@ -28,9 +28,7 @@ async def test_scope_filter(client):
 
 
 async def test_value_can_be_object(client):
-    r = await client.put(
-        "/settings/global/limits", json={"value": {"max": 10, "tags": ["a", "b"]}}
-    )
+    r = await client.put("/settings/global/limits", json={"value": {"max": 10, "tags": ["a", "b"]}})
     assert r.json()["value"] == {"max": 10, "tags": ["a", "b"]}
 
 

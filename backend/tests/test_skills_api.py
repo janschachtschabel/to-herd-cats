@@ -41,9 +41,7 @@ async def test_crud_roundtrip(client):
 
     assert (await client.get(f"/skills/{sid}")).status_code == 200
 
-    updated = await client.patch(
-        f"/skills/{sid}", json={"enabled": False, "invocation": "command"}
-    )
+    updated = await client.patch(f"/skills/{sid}", json={"enabled": False, "invocation": "command"})
     assert updated.status_code == 200
     assert updated.json()["enabled"] is False
     assert updated.json()["invocation"] == "command"

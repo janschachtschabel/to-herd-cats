@@ -38,9 +38,7 @@ async def test_reject_invalid_kind(client):
 
 
 async def test_crud_roundtrip(client):
-    created = (
-        await client.post("/data-sources", json={"name": "D", "kind": "wiki"})
-    ).json()
+    created = (await client.post("/data-sources", json={"name": "D", "kind": "wiki"})).json()
     did = created["id"]
     assert (await client.get(f"/data-sources/{did}")).status_code == 200
     upd = await client.patch(f"/data-sources/{did}", json={"enabled": False})

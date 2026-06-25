@@ -5,22 +5,19 @@ entity. Subclasses bind a concrete repository; entity-specific logic is added
 by extending or overriding methods as it appears.
 """
 
-from typing import Generic
-
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repositories.base import BaseRepository, ModelT
+from app.core.db import Base
+from app.repositories.base import BaseRepository
 
 
 class EntityNotFoundError(Exception):
     """Raised when an entity id does not exist."""
 
 
-class CrudService(Generic[ModelT]):
-    def __init__(
-        self, session: AsyncSession, repository: BaseRepository[ModelT]
-    ) -> None:
+class CrudService[ModelT: Base]:
+    def __init__(self, session: AsyncSession, repository: BaseRepository[ModelT]) -> None:
         self._session = session
         self._repo = repository
 
