@@ -306,4 +306,11 @@ the Postgres profile.
 
 ## 14. Code-comments, docs and readme allways english
 
+## 15. Implementation plan & roadmap
+
+The milestone roadmap (M0-M9), build strategy, open decisions and a progress log
+live in [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md). This file is
+the contract (what to build); that plan is the sequence (how and in what order) —
+keep both in sync as milestones land.
+
 #
