@@ -161,12 +161,13 @@
 - **Verify:** a trace/metric is produced (mock/local Langfuse); an `InboxItem` is
   delivered to a mock channel.
 
-### M7 — Frontend cockpit (Angular 22) + skill authoring — IN PROGRESS
-- **Status:** ✅ M7.1a backend CORS + Angular 22 adopted (latest stable; was 21);
-  next: scaffold (zoneless/signals/standalone + Material 3) + core API client +
-  the Agents vertical slice, then CRUD shells, schema-form, postbox UI, skills.
+### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
+- **Status:** ✅ M7.1a backend CORS · ✅ M7.1b Angular 21 zoneless app scaffolded
+  (Vitest preinstalled; the dev Node v22.14 can't run the Angular 22 CLI — needs
+  >=22.22.3 — so 21 LTS, bump after a Node upgrade). Next: core API client +
+  Agents vertical slice, then CRUD shells, schema-form, postbox UI, skills.
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
-- **Plan:** Angular 22 zoneless/signals/standalone + Material 3, Vitest, i18n
+- **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
   masks for every entity; the **generic "add server/source" form rendered from
   `config_schema`**; the **postbox UI** (accept/edit/respond/ignore) built fresh
@@ -293,3 +294,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M6.1: metrics summary (cost/tokens visibility) | `5689aba` |
 | 2026-06-25 | M6.2: channel delivery of postbox items — completes M6 | `3418289` |
 | 2026-06-25 | M7.1a: backend CORS + adopt Angular 22 | `f75743f` |
+| 2026-06-25 | M7.1b: scaffold Angular 21 zoneless app (Node blocks 22 CLI) | `8e42453` |
