@@ -13,6 +13,7 @@ from app.api.health import router as health_router
 from app.api.inbox import router as inbox_router
 from app.api.llm_connections import router as llm_connections_router
 from app.api.mcp_servers import router as mcp_servers_router
+from app.api.metrics import router as metrics_router
 from app.api.roles import router as roles_router
 from app.api.runs import router as runs_router
 from app.api.settings import router as settings_router
@@ -74,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(runs_router)
     app.include_router(inbox_router)
     app.include_router(events_router)
+    app.include_router(metrics_router)
     return app
 
 

@@ -11,6 +11,7 @@ from app.services.data_sources import DataSourceService
 from app.services.inbox import InboxService
 from app.services.llm_connections import LLMConnectionService
 from app.services.mcp_servers import MCPServerService
+from app.services.metrics import MetricsService
 from app.services.roles import RoleService
 from app.services.runs import RunService
 from app.services.settings import SettingService
@@ -102,3 +103,8 @@ def get_run_service(session: AsyncSession = Depends(get_session)) -> RunService:
 def get_inbox_service(session: AsyncSession = Depends(get_session)) -> InboxService:
     """Build the inbox (postbox) service for a request, bound to its session."""
     return InboxService(session)
+
+
+def get_metrics_service(session: AsyncSession = Depends(get_session)) -> MetricsService:
+    """Build the metrics (observability) service for a request, bound to its session."""
+    return MetricsService(session)
