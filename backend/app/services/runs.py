@@ -14,6 +14,7 @@ import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.channels.delivery import route_and_deliver
 from app.models._base import utcnow
 from app.models.agent import Agent
 from app.models.inbox_item import InboxItem
@@ -120,6 +121,7 @@ class RunService:
             await self._apply_result(run, agent, result, connection)
         await self._session.commit()
         await self._session.refresh(run)
+        await self._route_pending_items(run)
         return run
 
     async def respond_to_inbox(self, inbox_item_id: str, response: dict) -> Run:
@@ -146,6 +148,7 @@ class RunService:
         item.responded_at = utcnow()
         await self._session.commit()
         await self._session.refresh(run)
+        await self._route_pending_items(run)
         return run
 
     async def _resolve_connection(self, agent: Agent) -> LLMConnection:
@@ -216,6 +219,17 @@ class RunService:
                 status="pending",
             )
         )
+
+    async def _route_pending_items(self, run: Run) -> None:
+        # After a run pauses, route its new postbox item(s) to outbound channels
+        # and persist which channels they went to. Delivery is best-effort.
+        if run.status != "waiting_human":
+            return
+        items = await self._inbox.pending_for_run(run.id)
+        for item in items:
+            await route_and_deliver(self._session, item)
+        if items:
+            await self._session.commit()
 
     async def _apply_result(
         self, run: Run, agent: Agent, result: GraphResult, connection: LLMConnection
