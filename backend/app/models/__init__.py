@@ -6,6 +6,7 @@ from app.models.data_source import DataSource
 from app.models.inbox_item import InboxItem
 from app.models.llm_connection import LLMConnection
 from app.models.mcp_server import MCPServer
+from app.models.memory import MemoryRecord
 from app.models.role import Role
 from app.models.run import Run
 from app.models.setting import Setting
@@ -21,6 +22,7 @@ __all__ = [
     "InboxItem",
     "LLMConnection",
     "MCPServer",
+    "MemoryRecord",
     "Role",
     "Run",
     "Setting",

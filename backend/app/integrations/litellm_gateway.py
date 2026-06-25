@@ -14,6 +14,9 @@ from pydantic import BaseModel
 from app.core.secret_ref import resolve_secret
 from app.models.llm_connection import LLMConnection
 
+# Embedding model for long-term memory recall; independent of the chat model.
+DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
+
 
 class CompletionResult(BaseModel):
     content: str
@@ -55,6 +58,28 @@ async def complete(
         **params,
     )
     return _normalize(response)
+
+
+async def embed(
+    connection: LLMConnection,
+    text: str,
+    model: str = DEFAULT_EMBEDDING_MODEL,
+) -> list[float]:
+    """Embed ``text`` into a vector for semantic memory recall.
+
+    Uses the connection's resolved SecretRef key (same handling as ``complete``).
+    The embedding model is independent of the chat model, so it is a separate
+    argument defaulting to a small, widely-available model.
+    """
+    api_key = resolve_secret(connection.api_key_ref) if connection.api_key_ref else None
+    response = await litellm.aembedding(
+        model=model,
+        input=[text],
+        api_base=connection.api_base or None,
+        api_key=api_key,
+    )
+    item = response.data[0]
+    return item["embedding"] if isinstance(item, dict) else item.embedding
 
 
 def _normalize(response: object) -> CompletionResult:

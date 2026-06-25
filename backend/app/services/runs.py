@@ -10,22 +10,27 @@ InboxItem. A human response resumes the run. Background/durable execution is M5.
 # evaluated eagerly.
 from __future__ import annotations
 
+import json
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models._base import utcnow
 from app.models.agent import Agent
 from app.models.inbox_item import InboxItem
 from app.models.llm_connection import LLMConnection
+from app.models.memory import MemoryRecord
 from app.models.run import Run
 from app.repositories.agents import SqlAlchemyAgentRepository
 from app.repositories.data_sources import SqlAlchemyDataSourceRepository
 from app.repositories.inbox_items import SqlAlchemyInboxItemRepository
 from app.repositories.llm_connections import SqlAlchemyLLMConnectionRepository
 from app.repositories.mcp_servers import SqlAlchemyMCPServerRepository
+from app.repositories.memories import SqlAlchemyMemoryRepository
 from app.repositories.runs import SqlAlchemyRunRepository
 from app.repositories.templates import SqlAlchemyTemplateRepository
 from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
+from app.runtime.memory import embedding_for, recall
 from app.runtime.retrieval import ResolvedDataSource, retrieve_context
 from app.runtime.structured import compare_results, render_output, structure_output
 from app.runtime.tools import ResolvedTool
@@ -52,6 +57,7 @@ class RunService:
         self._mcp = SqlAlchemyMCPServerRepository(session)
         self._templates = SqlAlchemyTemplateRepository(session)
         self._data_sources = SqlAlchemyDataSourceRepository(session)
+        self._memories = SqlAlchemyMemoryRepository(session)
 
     async def get(self, run_id: str) -> Run:
         run = await self._runs.get(run_id)
@@ -96,7 +102,7 @@ class RunService:
         run.thread_id = run.id
         await self._session.commit()
 
-        context = await retrieve_context(sources, payload.goal) if sources else ""
+        context = await self._build_context(agent, payload.goal, sources, connection)
         try:
             result = await start_run(
                 agent, connection, resolved, run.input, thread_id=run.id, context=context
@@ -163,6 +169,33 @@ class RunService:
             resolved.append(ResolvedDataSource(data_source=ds, server=server))
         return resolved
 
+    async def _build_context(
+        self,
+        agent: Agent,
+        goal: str,
+        sources: list[ResolvedDataSource],
+        connection: LLMConnection,
+    ) -> str:
+        # Recalled memory and retrieved data-source content are both injected as
+        # run context; each section labels itself (see initial_messages).
+        sections: list[str] = []
+        memory = await self._recall_memory(agent, goal, connection)
+        if memory:
+            sections.append(memory)
+        if sources:
+            retrieved = await retrieve_context(sources, goal)
+            if retrieved:
+                sections.append(retrieved)
+        return "\n\n".join(sections)
+
+    async def _recall_memory(self, agent: Agent, query: str, connection: LLMConnection) -> str:
+        mode = (agent.memory or {}).get("mode", "none")
+        if mode == "none":
+            return ""
+        memories = await self._memories.for_agent(agent.id)
+        recalled = await recall(memories, mode, query, connection)
+        return f"Memory from past interactions:\n{recalled}" if recalled else ""
+
     def _wait_for_human(self, run: Run, agent: Agent, result: GraphResult) -> None:
         run.status = "waiting_human"
         value = result.interrupt_value or {}
@@ -203,6 +236,7 @@ class RunService:
             run.metrics = result.usage
         run.status = "completed"
         run.finished_at = utcnow()
+        await self._store_memory(run, agent, connection)
 
     async def _apply_output(
         self, run: Run, agent: Agent, content: str, connection: LLMConnection
@@ -222,6 +256,27 @@ class RunService:
                     "content": render_output(template.render_template, structured),
                 }
             ]
+
+    async def _store_memory(self, run: Run, agent: Agent, connection: LLMConnection) -> None:
+        # Persist a completed interaction so future runs of this agent can recall
+        # it; long-term mode also stores an embedding for semantic recall.
+        mode = (agent.memory or {}).get("mode", "none")
+        if mode == "none":
+            return
+        goal = (run.input or {}).get("goal", "")
+        content = f"Goal: {goal}\nAnswer: {self._memory_answer(run.result or {})}"
+        embedding = await embedding_for(content, mode, connection)
+        self._session.add(
+            MemoryRecord(agent_id=agent.id, run_id=run.id, content=content, embedding=embedding)
+        )
+
+    @staticmethod
+    def _memory_answer(result: dict) -> str:
+        if "content" in result:
+            return str(result["content"])
+        if result.get("rejected"):
+            return "(output rejected by a human)"
+        return json.dumps(result, ensure_ascii=False)
 
     async def _resolve_template(self, agent: Agent):
         if not agent.default_template_id:

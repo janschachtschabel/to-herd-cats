@@ -88,4 +88,5 @@ async def test_search_failure_is_skipped(client, monkeypatch):
 
     run = (await client.post(f"/agents/{agent_id}/runs", json={"goal": "x"})).json()
     assert run["status"] == "completed"  # the run still completes
-    assert not any("Relevant context" in (m.get("content") or "") for m in captured["messages"])
+    # No context message is injected: just the persona system prompt + the goal.
+    assert len(captured["messages"]) == 2

@@ -16,12 +16,14 @@ def system_prompt(agent: Agent) -> str:
 
 
 def initial_messages(agent: Agent, goal: str, context: str = "") -> list[dict]:
+    # ``context`` carries recalled memory and/or retrieved data-source content;
+    # each section is self-labelled by the caller, so the header stays generic.
     messages = [{"role": "system", "content": system_prompt(agent)}]
     if context:
         messages.append(
             {
                 "role": "system",
-                "content": "Relevant context from your data sources:\n" + context,
+                "content": "Context for this run:\n" + context,
             }
         )
     messages.append({"role": "user", "content": goal})
