@@ -1,0 +1,42 @@
+<section class="inbox">
+  <h2>Postbox</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (items().length === 0) {
+    <p>Keine Einträge.</p>
+  } @else {
+    @for (item of items(); track item.id) {
+      <mat-card class="item">
+        <mat-card-header>
+          <mat-card-title>{{ item.type }}</mat-card-title>
+          <mat-card-subtitle>{{ item.status }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <pre class="payload">{{ description(item) }}</pre>
+
+          @if (item.status === 'pending') {
+            <mat-form-field appearance="outline" class="content">
+              <mat-label>Antwort / Bearbeitung (optional)</mat-label>
+              <textarea matInput rows="3" [(ngModel)]="contents[item.id]"></textarea>
+            </mat-form-field>
+          } @else if (item.response) {
+            <p class="answered">Beantwortet: {{ item.response['action'] }}</p>
+          }
+        </mat-card-content>
+
+        @if (item.status === 'pending') {
+          <mat-card-actions>
+            @for (action of item.allowed_responses; track action) {
+              <button mat-button (click)="respond(item, action)">{{ action }}</button>
+            }
+          </mat-card-actions>
+        }
+      </mat-card>
+    }
+  }
+</section>
