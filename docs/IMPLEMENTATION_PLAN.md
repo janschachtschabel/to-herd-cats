@@ -161,9 +161,9 @@
 - **Verify:** a trace/metric is produced (mock/local Langfuse); an `InboxItem` is
   delivered to a mock channel.
 
-### M7 — Frontend cockpit (Angular 21) + skill authoring
+### M7 — Frontend cockpit (Angular 22) + skill authoring
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
-- **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
+- **Plan:** Angular 22 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
   masks for every entity; the **generic "add server/source" form rendered from
   `config_schema`**; the **postbox UI** (accept/edit/respond/ignore) built fresh

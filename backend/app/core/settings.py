@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # SQLite; the Postgres saver arrives with M9.
     checkpoint_path: str = "./cockpit.checkpoints.db"
 
+    # Browser origins allowed to call the API (the Angular dev server). Listed
+    # explicitly rather than "*" so credentials can be added safely later.
+    cors_origins: list[str] = ["http://localhost:4200"]
+
 
 @lru_cache
 def get_settings() -> Settings:

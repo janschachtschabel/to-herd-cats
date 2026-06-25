@@ -4,6 +4,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.agents import router as agents_router
 from app.api.channels import router as channels_router
@@ -60,6 +61,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Strong refs to detached background tasks (autonomous loops) so the event
     # loop does not garbage-collect them mid-flight.
     app.state.background_tasks = set()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.include_router(health_router)
     app.include_router(agents_router)
     app.include_router(llm_connections_router)
