@@ -77,10 +77,7 @@ class RunService:
         except Exception as exc:  # provider/runtime failure -> failed run
             self._mark_failed(run, exc)
         else:
-            if result.interrupted:
-                self._wait_for_human(run, agent, result)
-            else:
-                self._finalize(run, result, response=None)
+            self._apply_result(run, agent, result)
         await self._session.commit()
         await self._session.refresh(run)
         return run
@@ -101,7 +98,7 @@ class RunService:
         except Exception as exc:
             self._mark_failed(run, exc)
         else:
-            self._finalize(run, result, response)
+            self._apply_result(run, agent, result)
 
         item.status = "answered"
         item.response = response
@@ -143,12 +140,23 @@ class RunService:
             )
         )
 
-    def _finalize(self, run: Run, result: GraphResult, response: dict | None) -> None:
-        action = (response or {}).get("action", "accept")
+    def _apply_result(self, run: Run, agent: Agent, result: GraphResult) -> None:
+        # A resume can pause again (another tool approval, or the output review),
+        # so this is shared by both create and respond.
+        if result.interrupted:
+            self._wait_for_human(run, agent, result)
+        else:
+            self._finalize(run, result)
+
+    def _finalize(self, run: Run, result: GraphResult) -> None:
+        # The output decision comes from the graph (the review node), not the raw
+        # response, so a tool-approval reply is never misread as an output verdict.
+        decision = result.decision or {}
+        action = decision.get("action", "accept")
         if action == "reject":
             run.result = {"rejected": True}
         elif action == "edit":
-            run.result = {"content": (response or {}).get("content", result.draft)}
+            run.result = {"content": decision.get("content", result.draft)}
         else:  # accept / no approval needed
             run.result = {"content": result.draft}
         if result.usage:

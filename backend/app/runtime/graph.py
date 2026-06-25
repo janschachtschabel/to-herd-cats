@@ -76,19 +76,40 @@ def _make_agent_node(connection: LLMConnection, schemas: list[dict]):
     return agent
 
 
+def _tool_needs_approval(resolved: list[ResolvedTool], call: dict) -> bool:
+    match = next((r for r in resolved if r.tool.name == call.get("name")), None)
+    return bool(match and match.tool.requires_approval)
+
+
 def _make_tools_node(resolved: list[ResolvedTool]):
     async def tools(state: RunState) -> dict[str, Any]:
-        messages = state.get("messages", [])
-        tool_messages = [
-            {
-                "role": "tool",
-                "tool_call_id": call["id"],
-                "content": await execute_tool_call(resolved, call),
-            }
-            for call in state.get("pending", [])
-        ]
+        pending = state.get("pending", [])
+        # The approval interrupt must precede execution: LangGraph re-runs a node
+        # from the top on resume, so a tool executed before the interrupt would
+        # run twice. Decide approvals first (pure), then execute once.
+        needs_approval = [c for c in pending if _tool_needs_approval(resolved, c)]
+        decision: dict = {}
+        if needs_approval:
+            decision = interrupt(
+                {
+                    "type": "approval_request",
+                    "description_md": "Approve tool call(s): "
+                    + ", ".join(c["name"] for c in needs_approval),
+                    "tool_calls": needs_approval,
+                    "allowed_responses": ["accept", "reject"],
+                }
+            )
+        rejected = (decision or {}).get("action") == "reject"
+
+        tool_messages = []
+        for call in pending:
+            if rejected and _tool_needs_approval(resolved, call):
+                output = "Tool call rejected by a human."
+            else:
+                output = await execute_tool_call(resolved, call)
+            tool_messages.append({"role": "tool", "tool_call_id": call["id"], "content": output})
         return {
-            "messages": messages + tool_messages,
+            "messages": state.get("messages", []) + tool_messages,
             "pending": [],
             "iterations": state.get("iterations", 0) + 1,
         }
