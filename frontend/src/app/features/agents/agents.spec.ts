@@ -31,6 +31,6 @@ describe('Agents', () => {
 
   it('shows an empty state when there are no agents', () => {
     const el = setup([]);
-    expect(el.textContent).toContain('No agents yet');
+    expect(el.textContent).toContain('Noch keine Agenten');
   });
 });

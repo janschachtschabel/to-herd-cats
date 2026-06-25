@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { Agent } from './agent';
 import { AgentsApi } from './agents-api';
@@ -10,7 +15,14 @@ import { AgentsApi } from './agents-api';
     stored in signals rather than plain fields. */
 @Component({
   selector: 'app-agents',
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatListModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './agents.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -37,7 +49,7 @@ export class Agents {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Failed to load agents.');
+        this.error.set('Agenten konnten nicht geladen werden.');
         this.loading.set(false);
       },
     });
@@ -54,7 +66,7 @@ export class Agents {
         this.goal = '';
         this.reload();
       },
-      error: () => this.error.set('Failed to create agent.'),
+      error: () => this.error.set('Agent konnte nicht erstellt werden.'),
     });
   }
 }

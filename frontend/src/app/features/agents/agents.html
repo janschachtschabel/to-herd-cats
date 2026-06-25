@@ -1,10 +1,16 @@
 <section class="agents">
-  <h2>Agents</h2>
+  <h2>Agenten</h2>
 
-  <form (ngSubmit)="create()">
-    <input name="name" [(ngModel)]="name" placeholder="Agent name" required />
-    <input name="goal" [(ngModel)]="goal" placeholder="Goal (optional)" />
-    <button type="submit">Create</button>
+  <form class="agent-form" (ngSubmit)="create()">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput name="name" [(ngModel)]="name" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Ziel (optional)</mat-label>
+      <input matInput name="goal" [(ngModel)]="goal" />
+    </mat-form-field>
+    <button mat-flat-button type="submit">Anlegen</button>
   </form>
 
   @if (error()) {
@@ -12,19 +18,22 @@
   }
 
   @if (loading()) {
-    <p>Loading…</p>
+    <mat-progress-bar mode="indeterminate" />
   } @else if (agents().length === 0) {
-    <p>No agents yet.</p>
+    <p>Noch keine Agenten.</p>
   } @else {
-    <ul>
+    <mat-list>
       @for (agent of agents(); track agent.id) {
-        <li>
-          <strong>{{ agent.name }}</strong> — {{ agent.status }}
-          @if (agent.goal) {
-            <em>· {{ agent.goal }}</em>
-          }
-        </li>
+        <mat-list-item>
+          <span matListItemTitle>{{ agent.name }}</span>
+          <span matListItemLine>
+            {{ agent.status }}
+            @if (agent.goal) {
+              · {{ agent.goal }}
+            }
+          </span>
+        </mat-list-item>
       }
-    </ul>
+    </mat-list>
   }
 </section>

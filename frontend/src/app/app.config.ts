@@ -4,6 +4,8 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 
+// Angular Material 21 uses CSS-based animations, so no @angular/animations
+// provider is needed (the package is intentionally not installed).
 export const appConfig: ApplicationConfig = {
   providers: [provideBrowserGlobalErrorListeners(), provideHttpClient(), provideRouter(routes)],
 };
