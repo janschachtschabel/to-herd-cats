@@ -1,0 +1,36 @@
+<section class="runs">
+  <h2>Runs</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else {
+    @if (summary(); as s) {
+      <div class="summary">
+        <span>Runs gesamt: {{ s.total_runs }}</span>
+        <span>Status: {{ byStatus(s) }}</span>
+        <span>Tokens: {{ s.total_tokens }}</span>
+        <span>Kosten: {{ s.total_cost }}</span>
+      </div>
+    }
+
+    @if (runs().length === 0) {
+      <p>Keine Runs.</p>
+    } @else {
+      <mat-accordion>
+        @for (run of runs(); track run.id) {
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ run.status }}</mat-panel-title>
+              <mat-panel-description>{{ run.started_at }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <pre class="result">{{ result(run) }}</pre>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+  }
+</section>

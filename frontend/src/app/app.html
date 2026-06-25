@@ -12,6 +12,7 @@
         >Agenten</a
       >
       <a mat-list-item routerLink="/inbox" routerLinkActive="active">Postbox</a>
+      <a mat-list-item routerLink="/runs" routerLinkActive="active">Runs</a>
       @for (entity of entities; track entity.path) {
         <a mat-list-item [routerLink]="entity.path" routerLinkActive="active">{{ entity.title }}</a>
       }
