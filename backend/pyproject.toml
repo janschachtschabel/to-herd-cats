@@ -13,6 +13,7 @@ dependencies = [
     "aiosqlite>=0.20",
     "alembic>=1.13",
     "litellm>=1.89.4",
+    "mcp>=1.28.0",
 ]
 
 [dependency-groups]
