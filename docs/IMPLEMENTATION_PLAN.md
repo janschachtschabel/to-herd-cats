@@ -162,12 +162,12 @@
   delivered to a mock channel.
 
 ### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
-- **Status:** ✅ M7.1 (CORS, scaffold, Agents slice + API client) · ✅ M7.2
-  (Material 3 + CRUD list/delete shells over 9 entities + nav) · ✅ M7.3a
-  config-driven create forms (`<app-entity-form>`, 7 creatable entities). Next:
-  M7.3b (foreign-key reference fields + edit/PATCH + the MCP `config_schema`
-  form), then postbox UI (M7.4), runs/metrics, skills. Deferred: i18n keys,
-  Setting view, live screenshot (preview on `wlo-suche`), Angular 22 (Node).
+- **Status:** ✅ M7.1 (CORS, scaffold, Agents + API client) · ✅ M7.2 (Material 3 +
+  CRUD shells over 9 entities + nav) · ✅ M7.3a config-driven create forms · ✅ M7.4
+  postbox UI (HITL accept/edit/reject/respond → resumes the run). Next: M7.3b (FK
+  reference fields + edit/PATCH + MCP `config_schema` form), M7.5 runs/metrics
+  views, M7.6 skill authoring. Deferred: i18n keys, Setting view, live screenshot
+  (preview on `wlo-suche`), Angular 22 (Node).
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -302,3 +302,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M7.2b-i: generic CRUD list machinery (CrudApi + entity-list) | `55eb072` |
 | 2026-06-25 | M7.2b-ii: wire 9 entities + sidenav nav — completes M7.2 | `67f7b8a` |
 | 2026-06-25 | M7.3a: config-driven create forms (entity-form) | `e82b35d` |
+| 2026-06-25 | M7.4: postbox UI (HITL responses) | `142c9a8` |
