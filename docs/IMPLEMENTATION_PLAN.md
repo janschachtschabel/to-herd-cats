@@ -88,8 +88,8 @@
   self-mocks); backend is ruff-clean.
 
 ### M4 — Execution plane: runtime + Run + Postbox (the heart) — IN PROGRESS
-- **Status:** ✅ M4.1 on-demand runs · ✅ M4.2 LangGraph postbox (interrupt/resume);
-  remaining: M4.3 tools · M4.4 structured output · M4.5 retrieval · M4.6 memory.
+- **Status:** ✅ M4.1 on-demand runs · ✅ M4.2 postbox · ✅ M4.3 tool use (loop +
+  per-tool approval); remaining: M4.4 structured output · M4.5 retrieval · M4.6 memory.
 - **Goal:** an agent runs, pauses for a human, resumes — the "employee replies"
   mechanism.
 - **Plan:** `runtime/` LangGraph graph (uses an LLMConnection + selected tools
@@ -252,3 +252,6 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M3: discover endpoint completes M3 | `5864999` |
 | 2026-06-25 | M4.1: on-demand Run execution | `1518734` |
 | 2026-06-25 | M4.2: LangGraph postbox (HITL interrupt/resume) | `e1b278b` |
+| 2026-06-25 | M4.3a-i: tool plumbing (gateway tools, MCP call_tool) | `c1e5c36` |
+| 2026-06-25 | M4.3a-ii: agent<->tools loop | `b41726c` |
+| 2026-06-25 | M4.3b: per-tool approval gate | `9994988` |
