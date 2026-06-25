@@ -1,0 +1,30 @@
+<section class="agents">
+  <h2>Agents</h2>
+
+  <form (ngSubmit)="create()">
+    <input name="name" [(ngModel)]="name" placeholder="Agent name" required />
+    <input name="goal" [(ngModel)]="goal" placeholder="Goal (optional)" />
+    <button type="submit">Create</button>
+  </form>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p>Loading…</p>
+  } @else if (agents().length === 0) {
+    <p>No agents yet.</p>
+  } @else {
+    <ul>
+      @for (agent of agents(); track agent.id) {
+        <li>
+          <strong>{{ agent.name }}</strong> — {{ agent.status }}
+          @if (agent.goal) {
+            <em>· {{ agent.goal }}</em>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

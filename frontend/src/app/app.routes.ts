@@ -1,3 +1,5 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { Agents } from './features/agents/agents';
+
+export const routes: Routes = [{ path: '', component: Agents }];
