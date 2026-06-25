@@ -162,10 +162,11 @@
   delivered to a mock channel.
 
 ### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
-- **Status:** ✅ M7.1a backend CORS · ✅ M7.1b Angular 21 zoneless app scaffolded
-  (Vitest preinstalled; the dev Node v22.14 can't run the Angular 22 CLI — needs
-  >=22.22.3 — so 21 LTS, bump after a Node upgrade). Next: core API client +
-  Agents vertical slice, then CRUD shells, schema-form, postbox UI, skills.
+- **Status:** ✅ M7.1a backend CORS · ✅ M7.1b Angular 21 zoneless scaffold
+  (Vitest preinstalled; Node v22.14 can't run the Angular 22 CLI — so 21 LTS,
+  bump after a Node upgrade) · ✅ M7.1c Agents slice + typed API client (full
+  stack verified: build + Vitest + live CORS round-trip). Next: Angular Material
+  + CRUD shells (M7.2), then schema-form, postbox UI, runs/metrics, skills.
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -295,3 +296,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M6.2: channel delivery of postbox items — completes M6 | `3418289` |
 | 2026-06-25 | M7.1a: backend CORS + adopt Angular 22 | `f75743f` |
 | 2026-06-25 | M7.1b: scaffold Angular 21 zoneless app (Node blocks 22 CLI) | `8e42453` |
+| 2026-06-25 | M7.1c: agents slice + typed API client (full stack) | `d80c94c` |
