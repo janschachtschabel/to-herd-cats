@@ -18,6 +18,7 @@ from app.models.inbox_item import InboxItem
 from app.models.llm_connection import LLMConnection
 from app.models.run import Run
 from app.repositories.agents import SqlAlchemyAgentRepository
+from app.repositories.data_sources import SqlAlchemyDataSourceRepository
 from app.repositories.inbox_items import SqlAlchemyInboxItemRepository
 from app.repositories.llm_connections import SqlAlchemyLLMConnectionRepository
 from app.repositories.mcp_servers import SqlAlchemyMCPServerRepository
@@ -25,6 +26,7 @@ from app.repositories.runs import SqlAlchemyRunRepository
 from app.repositories.templates import SqlAlchemyTemplateRepository
 from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
+from app.runtime.retrieval import ResolvedDataSource, retrieve_context
 from app.runtime.structured import compare_results, render_output, structure_output
 from app.runtime.tools import ResolvedTool
 from app.schemas.run import RunInput
@@ -49,6 +51,7 @@ class RunService:
         self._tools = SqlAlchemyToolRepository(session)
         self._mcp = SqlAlchemyMCPServerRepository(session)
         self._templates = SqlAlchemyTemplateRepository(session)
+        self._data_sources = SqlAlchemyDataSourceRepository(session)
 
     async def get(self, run_id: str) -> Run:
         run = await self._runs.get(run_id)
@@ -82,6 +85,7 @@ class RunService:
             raise EntityNotFoundError(agent_id)
         connection = await self._resolve_connection(agent)
         resolved = await self._resolve_tools(agent)
+        sources = await self._resolve_data_sources(agent)
 
         run = Run(agent_id=agent_id, status="queued", input=payload.model_dump(mode="json"))
         await self._runs.add(run)
@@ -92,8 +96,11 @@ class RunService:
         run.thread_id = run.id
         await self._session.commit()
 
+        context = await retrieve_context(sources, payload.goal) if sources else ""
         try:
-            result = await start_run(agent, connection, resolved, run.input, thread_id=run.id)
+            result = await start_run(
+                agent, connection, resolved, run.input, thread_id=run.id, context=context
+            )
         except Exception as exc:  # provider/runtime failure -> failed run
             self._mark_failed(run, exc)
         else:
@@ -144,6 +151,16 @@ class RunService:
                 continue
             server = await self._mcp.get(tool.mcp_server_id) if tool.mcp_server_id else None
             resolved.append(ResolvedTool(tool=tool, server=server))
+        return resolved
+
+    async def _resolve_data_sources(self, agent: Agent) -> list[ResolvedDataSource]:
+        resolved: list[ResolvedDataSource] = []
+        for ds_id in agent.data_source_ids or []:
+            ds = await self._data_sources.get(ds_id)
+            if ds is None or not ds.enabled:
+                continue
+            server = await self._mcp.get(ds.mcp_server_id) if ds.mcp_server_id else None
+            resolved.append(ResolvedDataSource(data_source=ds, server=server))
         return resolved
 
     def _wait_for_human(self, run: Run, agent: Agent, result: GraphResult) -> None:

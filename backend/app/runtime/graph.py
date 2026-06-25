@@ -171,10 +171,11 @@ async def start_run(
     resolved: list[ResolvedTool],
     run_input: dict,
     thread_id: str,
+    context: str = "",
 ) -> GraphResult:
     graph = _build(agent, connection, resolved)
     config = {"configurable": {"thread_id": thread_id}}
-    messages = initial_messages(agent, run_input.get("goal", ""))
+    messages = initial_messages(agent, run_input.get("goal", ""), context)
     out = await graph.ainvoke({"messages": messages}, config=config)
     return _interpret(out)
 

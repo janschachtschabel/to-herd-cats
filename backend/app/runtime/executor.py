@@ -15,8 +15,14 @@ def system_prompt(agent: Agent) -> str:
     return "\n".join(parts)
 
 
-def initial_messages(agent: Agent, goal: str) -> list[dict]:
-    return [
-        {"role": "system", "content": system_prompt(agent)},
-        {"role": "user", "content": goal},
-    ]
+def initial_messages(agent: Agent, goal: str, context: str = "") -> list[dict]:
+    messages = [{"role": "system", "content": system_prompt(agent)}]
+    if context:
+        messages.append(
+            {
+                "role": "system",
+                "content": "Relevant context from your data sources:\n" + context,
+            }
+        )
+    messages.append({"role": "user", "content": goal})
+    return messages
