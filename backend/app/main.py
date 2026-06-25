@@ -48,6 +48,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
     app.state.settings = settings
+    # Strong refs to detached background tasks (autonomous loops) so the event
+    # loop does not garbage-collect them mid-flight.
+    app.state.background_tasks = set()
     app.include_router(health_router)
     app.include_router(agents_router)
     app.include_router(llm_connections_router)

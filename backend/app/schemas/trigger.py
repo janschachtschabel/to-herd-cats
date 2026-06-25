@@ -52,3 +52,11 @@ class TriggerRead(TriggerBase):
     last_fired_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class TriggerFireResult(BaseModel):
+    """Outcome of manually firing a trigger via the fire endpoint."""
+
+    status: str  # "fired" (ran once) or "started" (autonomous loop launched)
+    mode: str | None = None
+    run_id: str | None = None

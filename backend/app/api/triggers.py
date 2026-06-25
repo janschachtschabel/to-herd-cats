@@ -1,11 +1,20 @@
 """HTTP routes for managing triggers (thin: I/O and error mapping)."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import asyncio
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import get_trigger_service
-from app.schemas.trigger import TriggerCreate, TriggerRead, TriggerUpdate
+from app.schemas.trigger import (
+    TriggerCreate,
+    TriggerFireResult,
+    TriggerRead,
+    TriggerUpdate,
+)
 from app.services.base import EntityNotFoundError
 from app.services.triggers import TriggerService
+from app.triggers.autonomous import run_autonomous_guarded
+from app.triggers.runner import fire
 
 router = APIRouter(prefix="/triggers", tags=["triggers"])
 
@@ -58,3 +67,28 @@ async def delete_trigger(
         await service.delete(trigger_id)
     except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "trigger not found") from None
+
+
+@router.post("/{trigger_id}/fire", response_model=TriggerFireResult)
+async def fire_trigger(
+    trigger_id: str,
+    request: Request,
+    service: TriggerService = Depends(get_trigger_service),
+) -> TriggerFireResult:
+    """Run a trigger now: autonomous starts a background loop; others fire once."""
+    try:
+        trigger = await service.get(trigger_id)
+    except EntityNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trigger not found") from None
+    factory = request.app.state.session_factory
+    agent_id, loop_config = trigger.agent_id, trigger.loop_config
+    if trigger.mode == "autonomous":
+        # Detached, dev-grade: tracked on app.state so it is not GC'd mid-flight.
+        task = asyncio.create_task(
+            run_autonomous_guarded(factory, agent_id, trigger_id, loop_config)
+        )
+        request.app.state.background_tasks.add(task)
+        task.add_done_callback(request.app.state.background_tasks.discard)
+        return TriggerFireResult(status="started", mode="autonomous")
+    run_id = await fire(factory, agent_id, trigger_id)
+    return TriggerFireResult(status="fired", run_id=run_id)
