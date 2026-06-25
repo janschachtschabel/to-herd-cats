@@ -13,8 +13,9 @@ from jinja2.sandbox import SandboxedEnvironment
 from app.integrations.litellm_gateway import complete
 from app.models.llm_connection import LLMConnection
 
-# Sandboxed so an admin-authored template cannot reach arbitrary attributes/code.
-_JINJA = SandboxedEnvironment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+# Sandboxed (no arbitrary attribute/code access) and autoescaping, so run/agent
+# data rendered into an HTML template cannot inject markup (XSS).
+_JINJA = SandboxedEnvironment(autoescape=True, trim_blocks=True, lstrip_blocks=True)
 
 
 async def structure_output(connection: LLMConnection, text: str, output_schema: dict) -> dict:

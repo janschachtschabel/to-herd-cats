@@ -11,6 +11,7 @@ InboxItem. A human response resumes the run. Background/durable execution is M5.
 from __future__ import annotations
 
 import json
+import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +38,8 @@ from app.runtime.structured import compare_results, render_output, structure_out
 from app.runtime.tools import ResolvedTool
 from app.schemas.run import RunInput
 from app.services.base import EntityNotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 class RunConfigError(Exception):
@@ -138,10 +141,13 @@ class RunService:
         try:
             result = await resume_run(agent, connection, resolved, run.thread_id, response)
         except Exception as exc:
+            # Leave the item pending so a transient failure can be answered again.
             self._mark_failed(run, exc)
-        else:
-            await self._apply_result(run, agent, result, connection)
+            await self._session.commit()
+            await self._session.refresh(run)
+            return run
 
+        await self._apply_result(run, agent, result, connection)
         item.status = "answered"
         item.response = response
         item.responded_by = response.get("responded_by")
@@ -164,6 +170,7 @@ class RunService:
         for tool_id in agent.tool_ids or []:
             tool = await self._tools.get(tool_id)
             if tool is None or not tool.enabled:
+                logger.warning("agent %s skips missing or disabled tool %s", agent.id, tool_id)
                 continue
             server = await self._mcp.get(tool.mcp_server_id) if tool.mcp_server_id else None
             resolved.append(ResolvedTool(tool=tool, server=server))
@@ -174,6 +181,7 @@ class RunService:
         for ds_id in agent.data_source_ids or []:
             ds = await self._data_sources.get(ds_id)
             if ds is None or not ds.enabled:
+                logger.warning("agent %s skips missing or disabled data source %s", agent.id, ds_id)
                 continue
             server = await self._mcp.get(ds.mcp_server_id) if ds.mcp_server_id else None
             resolved.append(ResolvedDataSource(data_source=ds, server=server))
@@ -305,6 +313,7 @@ class RunService:
         return await self._templates.get(agent.default_template_id)
 
     def _mark_failed(self, run: Run, exc: Exception) -> None:
+        logger.exception("run %s failed", run.id)
         run.status = "failed"
         run.result = {"error": str(exc)}
         run.finished_at = utcnow()

@@ -40,6 +40,8 @@ class CrudService[ModelT: Base]:
     async def update(self, entity_id: str, payload: BaseModel) -> ModelT:
         entity = await self.get(entity_id)
         for field, value in payload.model_dump(mode="json", exclude_unset=True).items():
+            if not hasattr(entity, field):
+                continue  # ignore fields not mapped on the model (schema-drift guard)
             setattr(entity, field, value)
         await self._session.commit()
         await self._session.refresh(entity)

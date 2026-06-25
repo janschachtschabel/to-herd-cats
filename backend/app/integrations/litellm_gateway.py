@@ -7,12 +7,15 @@ when the model asks to use tools, the tool calls).
 """
 
 import json
+import logging
 
 import litellm
 from pydantic import BaseModel
 
 from app.core.secret_ref import resolve_secret
 from app.models.llm_connection import LLMConnection
+
+logger = logging.getLogger(__name__)
 
 # Embedding model for long-term memory recall; independent of the chat model.
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
@@ -116,6 +119,7 @@ def _extract_tool_calls(
         try:
             arguments = json.loads(tc.function.arguments or "{}")
         except json.JSONDecodeError:
+            logger.warning("unparseable tool-call arguments for %s; using {}", tc.function.name)
             arguments = {}
         normalized.append({"id": tc.id, "name": tc.function.name, "arguments": arguments})
         openai_calls.append(

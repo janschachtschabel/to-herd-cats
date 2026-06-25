@@ -91,3 +91,28 @@ async def test_double_respond_conflict(client, monkeypatch):
 async def test_respond_unknown_item_404(client):
     resp = await client.post("/inbox/nope/respond", json={"action": "accept"})
     assert resp.status_code == 404
+
+
+async def test_failed_resume_keeps_item_pending_for_retry(client, monkeypatch):
+    _stub_llm(monkeypatch, "Draft.")
+    agent_id = await _approval_agent(client)
+    run = (await client.post(f"/agents/{agent_id}/runs", json={"goal": "x"})).json()
+    item = next(i for i in (await client.get("/inbox")).json() if i["run_id"] == run["id"])
+
+    async def boom(*args, **kwargs):
+        raise RuntimeError("transient resume failure")
+
+    monkeypatch.setattr("app.services.runs.resume_run", boom)
+    failed = await client.post(f"/inbox/{item['id']}/respond", json={"action": "accept"})
+    assert failed.json()["status"] == "failed"
+
+    # The item must stay pending (not "answered") so the human can try again.
+    still = (await client.get(f"/inbox/{item['id']}")).json()
+    assert still["status"] == "pending"
+
+    # Retrying with a working resume succeeds (no 409 conflict).
+    monkeypatch.undo()
+    _stub_llm(monkeypatch, "Draft.")
+    retry = await client.post(f"/inbox/{item['id']}/respond", json={"action": "accept"})
+    assert retry.status_code == 200
+    assert retry.json()["status"] == "completed"
