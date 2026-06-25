@@ -12,6 +12,7 @@ from mcp.shared.memory import create_connected_server_and_client_session
 
 from app.integrations.mcp_gateway import (
     MCPDiscoveryError,
+    call_tool_on_session,
     discover_tools,
     tools_from_session,
 )
@@ -56,3 +57,23 @@ async def test_discover_requires_url_for_streamable_http():
     server = MCPServer(name="x", transport="streamable_http")  # no url
     with pytest.raises(MCPDiscoveryError):
         await discover_tools(server)
+
+
+async def test_call_tool_on_session_returns_text():
+    server = _server_with_tool()
+    async with create_connected_server_and_client_session(server._mcp_server) as session:
+        out = await call_tool_on_session(session, "add", {"a": 2, "b": 3})
+    assert "5" in out
+
+
+async def test_call_tool_on_session_reports_tool_error():
+    server = FastMCP("test")
+
+    @server.tool()
+    def boom() -> int:
+        """Always fails."""
+        raise ValueError("nope")
+
+    async with create_connected_server_and_client_session(server._mcp_server) as session:
+        out = await call_tool_on_session(session, "boom", {})
+    assert out.startswith("Error")

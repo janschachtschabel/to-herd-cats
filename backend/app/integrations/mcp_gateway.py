@@ -9,6 +9,7 @@ Discovery is currently unauthenticated; resolving a server's ``credentials_ref``
 into auth headers is a follow-up.
 """
 
+import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
@@ -68,3 +69,39 @@ async def discover_tools(server: MCPServer) -> list[dict[str, Any]]:
         raise
     except Exception as exc:  # connection / protocol failures
         raise MCPDiscoveryError(f"discovery failed for {server.name!r}: {exc}") from exc
+
+
+class MCPToolError(RuntimeError):
+    """Raised when an MCP tool call fails (connection or protocol failure)."""
+
+
+def _result_text(result: object) -> str:
+    parts = [b.text for b in result.content if getattr(b, "text", None)]
+    if parts:
+        text = "\n".join(parts)
+    else:
+        structured = getattr(result, "structuredContent", None)
+        text = json.dumps(structured) if structured is not None else ""
+    if getattr(result, "isError", False):
+        return f"Error: {text}" if text else "Error: tool returned an error"
+    return text
+
+
+async def call_tool_on_session(session: ClientSession, tool_name: str, arguments: dict) -> str:
+    """Call a tool on an initialized session and render the result as text."""
+    result = await session.call_tool(tool_name, arguments)
+    return _result_text(result)
+
+
+async def call_tool(server: MCPServer, tool_name: str, arguments: dict) -> str:
+    """Connect to ``server`` and call ``tool_name``; render the result as text.
+
+    A tool that returns an error result yields an ``"Error: ..."`` string (so it
+    can be fed back to the model); a connection/protocol failure raises
+    MCPToolError.
+    """
+    try:
+        async with _connect(server) as session:
+            return await call_tool_on_session(session, tool_name, arguments)
+    except Exception as exc:
+        raise MCPToolError(f"tool call failed for {tool_name!r}: {exc}") from exc
