@@ -1,0 +1,32 @@
+<section class="entity-list">
+  <h2>{{ title() }}</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (rows().length === 0) {
+    <p>Keine Einträge.</p>
+  } @else {
+    <table mat-table [dataSource]="rows()">
+      @for (col of columns(); track col.key) {
+        <ng-container [matColumnDef]="col.key">
+          <th mat-header-cell *matHeaderCellDef>{{ col.label }}</th>
+          <td mat-cell *matCellDef="let row">{{ row[col.key] }}</td>
+        </ng-container>
+      }
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button aria-label="Löschen" (click)="delete(row.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+    </table>
+  }
+</section>
