@@ -162,11 +162,12 @@
   delivered to a mock channel.
 
 ### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
-- **Status:** ✅ M7.1a backend CORS · ✅ M7.1b Angular 21 zoneless scaffold
-  (Vitest preinstalled; Node v22.14 can't run the Angular 22 CLI — so 21 LTS,
-  bump after a Node upgrade) · ✅ M7.1c Agents slice + typed API client (full
-  stack verified: build + Vitest + live CORS round-trip). Next: Angular Material
-  + CRUD shells (M7.2), then schema-form, postbox UI, runs/metrics, skills.
+- **Status:** ✅ M7.1 (CORS, Angular 21 zoneless scaffold, Agents slice + typed
+  API client — full stack verified) · ✅ M7.2a Angular Material 3 applied to the
+  Agents feature (German UI; Material 21 = CSS animations, no @angular/animations).
+  Next: M7.2b generic CRUD shells for the remaining entities, then schema-form
+  (M7.3), postbox UI (M7.4), runs/metrics, skills. (i18n-key pass is a deferred
+  increment; Angular 21 not 22 = Node constraint.)
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -297,3 +298,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M7.1a: backend CORS + adopt Angular 22 | `f75743f` |
 | 2026-06-25 | M7.1b: scaffold Angular 21 zoneless app (Node blocks 22 CLI) | `8e42453` |
 | 2026-06-25 | M7.1c: agents slice + typed API client (full stack) | `d80c94c` |
+| 2026-06-25 | M7.2a: Angular Material 3 + agents feature restyled | `b1b0782` |
