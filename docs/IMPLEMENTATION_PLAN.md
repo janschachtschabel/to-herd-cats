@@ -273,6 +273,14 @@ integrations "just in case". Per milestone, only what the verification requires.
   frontend error/reload branches (entity-list/form, inbox non-pending, runs forkJoin
   error). The bootstrap smoke test passes with or without the zoneless provider in
   jsdom, so a real-browser load is the only definitive bootstrap check.
+- **Audit deferrals (acknowledged, not in scope yet).** Auth/RBAC (M8) — the whole
+  API is unauthenticated, including `POST /events` and MCP discovery; MCP discovery
+  has no SSRF whitelist / sandbox / timeout (pairs with M8/M4b); the checkpointer is
+  module-global (DI refactor later); on-demand runs are synchronous (background
+  execution = M5/M9); full i18n (German keys) and richer form field types (FK / JSON,
+  M7.3b). Inherent to the dev scheduler: a crash between fire and stamp can re-fire
+  (durable execution fixes it); `MAX_ITERATIONS` reached with pending tool calls
+  yields an empty answer.
 
 ## Progress log
 
@@ -315,3 +323,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M7.4: postbox UI (HITL responses) | `142c9a8` |
 | 2026-06-25 | M7.5: runs & metrics view (observability) | `d7b4b57` |
 | 2026-06-25 | review fixes: scheduler/events resilience, memory ranking test, frontend bootstrap + run-agent UI | `d830400`, `56213fa` |
+| 2026-06-25 | audit follow-ups: postbox retry, failure logging, Jinja autoescape, update drift-guard, runtime API_BASE, README status | `38f0935`, `4ac0d73` |
