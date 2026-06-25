@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_run_service
-from app.schemas.run import RunInput, RunRead
+from app.schemas.run import CompareRequest, CompareResult, RunInput, RunRead
 from app.services.base import EntityNotFoundError
 from app.services.runs import RunConfigError, RunService
 
@@ -42,3 +42,17 @@ async def get_run(run_id: str, service: RunService = Depends(get_run_service)) -
     except EntityNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "run not found") from None
     return RunRead.model_validate(run)
+
+
+@router.post("/runs/compare", response_model=CompareResult)
+async def compare_runs(
+    payload: CompareRequest, service: RunService = Depends(get_run_service)
+) -> CompareResult:
+    """Structured diff of two runs' results, optionally rendered via a template."""
+    try:
+        result = await service.compare(
+            payload.run_a_id, payload.run_b_id, payload.fields, payload.template_id
+        )
+    except EntityNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "run not found") from None
+    return CompareResult(**result)

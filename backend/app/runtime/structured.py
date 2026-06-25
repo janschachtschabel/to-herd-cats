@@ -45,3 +45,10 @@ def render_output(template_str: str, data: dict) -> str:
     """
     safe = {k: v for k, v in data.items() if isinstance(k, str) and k.isidentifier()}
     return _JINJA.from_string(template_str).render(data=data, **safe)
+
+
+def compare_results(a: dict, b: dict, fields: list[str] | None = None) -> dict:
+    """Structured diff of two run results, over the given fields (or all keys)."""
+    keys = list(fields) if fields else sorted(set(a) | set(b))
+    rows = [{"field": k, "a": a.get(k), "b": b.get(k), "equal": a.get(k) == b.get(k)} for k in keys]
+    return {"fields": rows, "all_equal": all(r["equal"] for r in rows)}

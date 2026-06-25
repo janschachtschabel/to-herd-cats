@@ -25,7 +25,7 @@ from app.repositories.runs import SqlAlchemyRunRepository
 from app.repositories.templates import SqlAlchemyTemplateRepository
 from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
-from app.runtime.structured import render_output, structure_output
+from app.runtime.structured import compare_results, render_output, structure_output
 from app.runtime.tools import ResolvedTool
 from app.schemas.run import RunInput
 from app.services.base import EntityNotFoundError
@@ -58,6 +58,23 @@ class RunService:
 
     async def list(self) -> list[Run]:
         return await self._runs.list()
+
+    async def compare(
+        self,
+        run_a_id: str,
+        run_b_id: str,
+        fields: list[str] | None = None,
+        template_id: str | None = None,
+    ) -> dict:
+        run_a = await self.get(run_a_id)
+        run_b = await self.get(run_b_id)
+        comparison = compare_results(run_a.result or {}, run_b.result or {}, fields)
+        rendered = None
+        if template_id:
+            template = await self._templates.get(template_id)
+            if template and template.render_template:
+                rendered = render_output(template.render_template, comparison)
+        return {"comparison": comparison, "rendered": rendered}
 
     async def create_and_execute(self, agent_id: str, payload: RunInput) -> Run:
         agent = await self._agents.get(agent_id)

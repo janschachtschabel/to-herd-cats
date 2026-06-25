@@ -37,3 +37,15 @@ class RunRead(BaseModel):
     finished_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class CompareRequest(BaseModel):
+    run_a_id: str
+    run_b_id: str
+    fields: list[str] | None = None
+    template_id: str | None = None
+
+
+class CompareResult(BaseModel):
+    comparison: dict
+    rendered: str | None = None
