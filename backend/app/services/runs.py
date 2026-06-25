@@ -5,6 +5,11 @@ completes, or pauses at an approval interrupt (status=waiting_human) and posts a
 InboxItem. A human response resumes the run. Background/durable execution is M5.
 """
 
+# Lazy annotations: the CRUD ``list`` method shadows the builtin ``list`` in the
+# class namespace, so method return hints like ``list[ResolvedTool]`` must not be
+# evaluated eagerly.
+from __future__ import annotations
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models._base import utcnow
@@ -15,8 +20,11 @@ from app.models.run import Run
 from app.repositories.agents import SqlAlchemyAgentRepository
 from app.repositories.inbox_items import SqlAlchemyInboxItemRepository
 from app.repositories.llm_connections import SqlAlchemyLLMConnectionRepository
+from app.repositories.mcp_servers import SqlAlchemyMCPServerRepository
 from app.repositories.runs import SqlAlchemyRunRepository
+from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
+from app.runtime.tools import ResolvedTool
 from app.schemas.run import RunInput
 from app.services.base import EntityNotFoundError
 
@@ -36,6 +44,8 @@ class RunService:
         self._agents = SqlAlchemyAgentRepository(session)
         self._llm = SqlAlchemyLLMConnectionRepository(session)
         self._inbox = SqlAlchemyInboxItemRepository(session)
+        self._tools = SqlAlchemyToolRepository(session)
+        self._mcp = SqlAlchemyMCPServerRepository(session)
 
     async def get(self, run_id: str) -> Run:
         run = await self._runs.get(run_id)
@@ -51,6 +61,7 @@ class RunService:
         if agent is None:
             raise EntityNotFoundError(agent_id)
         connection = await self._resolve_connection(agent)
+        resolved = await self._resolve_tools(agent)
 
         run = Run(agent_id=agent_id, status="queued", input=payload.model_dump(mode="json"))
         await self._runs.add(run)
@@ -62,7 +73,7 @@ class RunService:
         await self._session.commit()
 
         try:
-            result = await start_run(agent, connection, run.input, thread_id=run.id)
+            result = await start_run(agent, connection, resolved, run.input, thread_id=run.id)
         except Exception as exc:  # provider/runtime failure -> failed run
             self._mark_failed(run, exc)
         else:
@@ -83,9 +94,10 @@ class RunService:
         run = await self.get(item.run_id)
         agent = await self._agents.get(run.agent_id)
         connection = await self._resolve_connection(agent)
+        resolved = await self._resolve_tools(agent)
 
         try:
-            result = await resume_run(agent, connection, run.thread_id, response)
+            result = await resume_run(agent, connection, resolved, run.thread_id, response)
         except Exception as exc:
             self._mark_failed(run, exc)
         else:
@@ -106,6 +118,16 @@ class RunService:
         if connection is None:
             raise RunConfigError("agent's LLM connection does not exist")
         return connection
+
+    async def _resolve_tools(self, agent: Agent) -> list[ResolvedTool]:
+        resolved: list[ResolvedTool] = []
+        for tool_id in agent.tool_ids or []:
+            tool = await self._tools.get(tool_id)
+            if tool is None or not tool.enabled:
+                continue
+            server = await self._mcp.get(tool.mcp_server_id) if tool.mcp_server_id else None
+            resolved.append(ResolvedTool(tool=tool, server=server))
+        return resolved
 
     def _wait_for_human(self, run: Run, agent: Agent, result: GraphResult) -> None:
         run.status = "waiting_human"

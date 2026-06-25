@@ -1,13 +1,14 @@
-"""LangGraph runtime: an agent run as a graph, with optional human approval.
+"""LangGraph runtime: an agent run as an agent<->tools loop with optional approval.
 
-The graph generates a draft (reusing the M4.1 executor); for agents whose
-guardrails require approval it pauses at a ``review`` node via LangGraph's
-``interrupt()``. The paused state is checkpointed (keyed by the run's
-thread_id) and a human response resumes it.
+The ``agent`` node calls the model (with the agent's tool schemas); if the model
+requests tools, the ``tools`` node executes them via the MCP gateway and loops
+back, bounded by MAX_ITERATIONS. When the model returns a final answer, the run
+ends - or, for agents whose guardrails require approval, pauses at a ``review``
+node via ``interrupt()`` (the postbox). The paused state is checkpointed by the
+run's thread_id; a human response resumes it.
 
-The checkpointer is an in-process MemorySaver: paused runs survive for the
-process lifetime, which is enough for single-node dev. A persistent saver on the
-app DB (for restart/HA durability) is a follow-up (plan, M5).
+The checkpointer is an in-process MemorySaver (process-lifetime, single-node
+dev). A persistent saver on the app DB (restart/HA durability) is a follow-up.
 """
 
 from typing import Any, TypedDict
@@ -17,16 +18,21 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel
 
+from app.integrations.litellm_gateway import complete
 from app.models.agent import Agent
 from app.models.llm_connection import LLMConnection
-from app.runtime.executor import run_agent
+from app.runtime.executor import initial_messages
+from app.runtime.tools import ResolvedTool, execute_tool_call, tool_schemas
 
 # Process-lifetime checkpoint store shared across runs (dev). Durable saver = M5.
 _CHECKPOINTER = MemorySaver()
+MAX_ITERATIONS = 8
 
 
 class RunState(TypedDict, total=False):
-    goal: str
+    messages: list[dict]
+    pending: list[dict]
+    iterations: int
     draft: str
     usage: dict
     decision: dict
@@ -44,19 +50,59 @@ def _requires_approval(agent: Agent) -> bool:
     return bool((agent.guardrails or {}).get("requires_approval_for"))
 
 
-def _make_generate(agent: Agent, connection: LLMConnection):
-    async def generate(state: RunState) -> dict[str, Any]:
-        outcome = await run_agent(agent, connection, {"goal": state.get("goal", "")})
-        return {
-            "draft": outcome.content,
+def _make_agent_node(connection: LLMConnection, schemas: list[dict]):
+    async def agent(state: RunState) -> dict[str, Any]:
+        messages = state.get("messages", [])
+        result = await complete(connection, messages, tools=schemas or None)
+        assistant = result.assistant_message or {
+            "role": "assistant",
+            "content": result.content,
+        }
+        update: dict[str, Any] = {
+            "messages": messages + [assistant],
             "usage": {
-                "tokens": outcome.total_tokens,
-                "cost": outcome.cost,
-                "model": outcome.model,
+                "tokens": result.total_tokens,
+                "cost": result.cost,
+                "model": result.model,
             },
         }
+        if result.tool_calls:
+            update["pending"] = result.tool_calls
+        else:
+            update["pending"] = []
+            update["draft"] = result.content
+        return update
 
-    return generate
+    return agent
+
+
+def _make_tools_node(resolved: list[ResolvedTool]):
+    async def tools(state: RunState) -> dict[str, Any]:
+        messages = state.get("messages", [])
+        tool_messages = [
+            {
+                "role": "tool",
+                "tool_call_id": call["id"],
+                "content": await execute_tool_call(resolved, call),
+            }
+            for call in state.get("pending", [])
+        ]
+        return {
+            "messages": messages + tool_messages,
+            "pending": [],
+            "iterations": state.get("iterations", 0) + 1,
+        }
+
+    return tools
+
+
+def _make_route(requires_approval: bool):
+    def route(state: RunState) -> str:
+        if state.get("pending") and state.get("iterations", 0) < MAX_ITERATIONS:
+            return "tools"
+        return "review" if requires_approval else END
+
+    return route
 
 
 def _review(state: RunState) -> dict[str, Any]:
@@ -70,16 +116,20 @@ def _review(state: RunState) -> dict[str, Any]:
     return {"decision": decision}
 
 
-def _build(agent: Agent, connection: LLMConnection):
+def _build(agent: Agent, connection: LLMConnection, resolved: list[ResolvedTool]):
+    requires_approval = _requires_approval(agent)
     builder = StateGraph(RunState)
-    builder.add_node("generate", _make_generate(agent, connection))
-    builder.add_edge(START, "generate")
-    if _requires_approval(agent):
+    builder.add_node("agent", _make_agent_node(connection, tool_schemas(resolved)))
+    builder.add_node("tools", _make_tools_node(resolved))
+    builder.add_edge(START, "agent")
+    builder.add_edge("tools", "agent")
+
+    path_map: dict[str, str] = {"tools": "tools", END: END}
+    if requires_approval:
         builder.add_node("review", _review)
-        builder.add_edge("generate", "review")
         builder.add_edge("review", END)
-    else:
-        builder.add_edge("generate", END)
+        path_map["review"] = "review"
+    builder.add_conditional_edges("agent", _make_route(requires_approval), path_map)
     return builder.compile(checkpointer=_CHECKPOINTER)
 
 
@@ -95,18 +145,27 @@ def _interpret(out: dict) -> GraphResult:
 
 
 async def start_run(
-    agent: Agent, connection: LLMConnection, run_input: dict, thread_id: str
+    agent: Agent,
+    connection: LLMConnection,
+    resolved: list[ResolvedTool],
+    run_input: dict,
+    thread_id: str,
 ) -> GraphResult:
-    graph = _build(agent, connection)
+    graph = _build(agent, connection, resolved)
     config = {"configurable": {"thread_id": thread_id}}
-    out = await graph.ainvoke({"goal": run_input.get("goal", "")}, config=config)
+    messages = initial_messages(agent, run_input.get("goal", ""))
+    out = await graph.ainvoke({"messages": messages}, config=config)
     return _interpret(out)
 
 
 async def resume_run(
-    agent: Agent, connection: LLMConnection, thread_id: str, response: dict
+    agent: Agent,
+    connection: LLMConnection,
+    resolved: list[ResolvedTool],
+    thread_id: str,
+    response: dict,
 ) -> GraphResult:
-    graph = _build(agent, connection)
+    graph = _build(agent, connection, resolved)
     config = {"configurable": {"thread_id": thread_id}}
     out = await graph.ainvoke(Command(resume=response), config=config)
     return _interpret(out)

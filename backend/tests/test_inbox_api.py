@@ -31,7 +31,7 @@ def _stub_llm(monkeypatch, content: str) -> None:
     async def fake_complete(connection, messages, **kw):
         return CompletionResult(content=content, model="mock", total_tokens=10)
 
-    monkeypatch.setattr("app.runtime.executor.complete", fake_complete)
+    monkeypatch.setattr("app.runtime.graph.complete", fake_complete)
 
 
 async def test_inbox_empty_initially(client):

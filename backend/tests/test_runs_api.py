@@ -27,7 +27,7 @@ async def test_on_demand_run_completes(client, monkeypatch):
     async def fake_complete(connection, messages, **kw):
         return CompletionResult(content="Done.", model="mock", total_tokens=12, cost=0.001)
 
-    monkeypatch.setattr("app.runtime.executor.complete", fake_complete)
+    monkeypatch.setattr("app.runtime.graph.complete", fake_complete)
     agent_id = await _agent_with_llm(client)
 
     resp = await client.post(f"/agents/{agent_id}/runs", json={"goal": "Summarise X"})
@@ -43,7 +43,7 @@ async def test_run_records_llm_failure(client, monkeypatch):
     async def boom(connection, messages, **kw):
         raise RuntimeError("provider exploded")
 
-    monkeypatch.setattr("app.runtime.executor.complete", boom)
+    monkeypatch.setattr("app.runtime.graph.complete", boom)
     agent_id = await _agent_with_llm(client)
 
     resp = await client.post(f"/agents/{agent_id}/runs", json={"goal": "x"})
@@ -74,7 +74,7 @@ async def test_get_and_list_runs(client, monkeypatch):
     async def fake_complete(connection, messages, **kw):
         return CompletionResult(content="ok", model="mock", total_tokens=3)
 
-    monkeypatch.setattr("app.runtime.executor.complete", fake_complete)
+    monkeypatch.setattr("app.runtime.graph.complete", fake_complete)
     agent_id = await _agent_with_llm(client)
     run = (await client.post(f"/agents/{agent_id}/runs", json={"goal": "x"})).json()
 
