@@ -22,6 +22,8 @@ from app.api.tools import router as tools_router
 from app.api.triggers import router as triggers_router
 from app.core.db import make_engine, make_session_factory
 from app.core.settings import Settings, get_settings
+from app.runtime.checkpointer import open_app_checkpointer
+from app.runtime.graph import set_checkpointer
 from app.triggers.scheduler import start as start_scheduler
 
 
@@ -32,6 +34,9 @@ async def lifespan(app: FastAPI):
     engine = make_engine(settings.database_url)
     app.state.engine = engine
     app.state.session_factory = make_session_factory(engine)
+    checkpointer = await open_app_checkpointer(settings)
+    if checkpointer is not None:
+        set_checkpointer(checkpointer[0])
     scheduler_task = start_scheduler(app.state.session_factory)
     try:
         yield
@@ -41,6 +46,8 @@ async def lifespan(app: FastAPI):
             await scheduler_task
         except asyncio.CancelledError:
             pass
+        if checkpointer is not None:
+            await checkpointer[1].close()
         await engine.dispose()
 
 

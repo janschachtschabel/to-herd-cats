@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     # connection-string only — no engine-specific code outside the repositories.
     database_url: str = "sqlite+aiosqlite:///./cockpit.db"
 
+    # Persistent LangGraph checkpoint store (its own SQLite file to avoid
+    # cross-locking with the app DB connection). Used when the app database is
+    # SQLite; the Postgres saver arrives with M9.
+    checkpoint_path: str = "./cockpit.checkpoints.db"
+
 
 @lru_cache
 def get_settings() -> Settings:

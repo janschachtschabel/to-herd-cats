@@ -7,8 +7,9 @@ ends - or, for agents whose guardrails require approval, pauses at a ``review``
 node via ``interrupt()`` (the postbox). The paused state is checkpointed by the
 run's thread_id; a human response resumes it.
 
-The checkpointer is an in-process MemorySaver (process-lifetime, single-node
-dev). A persistent saver on the app DB (restart/HA durability) is a follow-up.
+The checkpointer defaults to an in-process MemorySaver; at startup the app swaps
+in a persistent SQLite saver (runtime/checkpointer.py) so paused runs survive a
+restart. The Postgres saver lands with Postgres parity (M9).
 """
 
 from typing import Any, TypedDict
@@ -24,9 +25,21 @@ from app.models.llm_connection import LLMConnection
 from app.runtime.executor import initial_messages
 from app.runtime.tools import ResolvedTool, execute_tool_call, tool_schemas
 
-# Process-lifetime checkpoint store shared across runs (dev). Durable saver = M5.
+# Default in-process store (tests / non-SQLite). The app swaps in a durable
+# SQLite saver at startup via set_checkpointer (see runtime/checkpointer.py).
 _CHECKPOINTER = MemorySaver()
 MAX_ITERATIONS = 8
+
+
+def get_checkpointer():
+    """Return the checkpointer all runs currently compile with."""
+    return _CHECKPOINTER
+
+
+def set_checkpointer(saver) -> None:
+    """Swap the run checkpointer (set once at startup to a durable saver)."""
+    global _CHECKPOINTER
+    _CHECKPOINTER = saver
 
 
 class RunState(TypedDict, total=False):
