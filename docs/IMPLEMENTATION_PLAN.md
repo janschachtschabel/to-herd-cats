@@ -6,9 +6,9 @@
 > stack, domain model, hard rules); this document is the **sequence** (how and in
 > what order). Keep both in sync.
 >
-> **Status (2026-06-25): M0–M2 complete and verified.** 54 tests green; Alembic
-> migrations `0001–0007` apply from scratch with no model drift; pushed to
-> `origin/main`. **Next: M3.**
+> **Status (2026-06-25): M0–M3 complete and verified.** 63 tests green; Alembic
+> migrations `0001–0007` apply from scratch with no model drift; backend is
+> ruff-clean; pushed to `origin/main`. **Next: M4.**
 
 ## Working agreements
 
@@ -71,15 +71,21 @@
 - **Verified:** 54 tests; full migration chain `0001–0007` applies from scratch;
   `alembic check` reports no model/migration drift; 11 entity tables created.
 
-### M3 — Integrations layer (the seam)
+### ✅ M3 — Integrations layer (the seam) — DONE
 - **Goal:** the LLM and tool wiring made real.
-- **Plan:** `integrations/litellm` (resolve LLMConnection → call, cost/limits);
-  `integrations/mcp_gateway` (MCPJungle: register a server, auto-discover its
-  tools → `MCPServer.discovered_tools`); `config_schema` handling (validate /
-  store the Smithery-style form schema). IBM ContextForge (REST→MCP) deferred
-  until needed.
-- **Verify:** tool discovery against a real/mock MCP server → tool list; a
-  LiteLLM call against a mock provider.
+- **Built:** `integrations/litellm_gateway.py` (resolve an LLMConnection's
+  SecretRef key at call time → LiteLLM call → normalized result: content, model,
+  usage, best-effort cost). `integrations/mcp_gateway.py` (connect to an
+  MCPServer over stdio / streamable HTTP, list tools → normalized descriptors).
+  `POST /mcp-servers/{id}/discover` caches `discovered_tools` and sets status
+  connected/error. `config_schema` is stored on MCPServer (since M2); the form
+  renders it in M7. New deps: `litellm`, `mcp` (official SDK).
+- **Decisions/limits:** discovery connects *directly* to each server; MCPJungle
+  routing and authenticated discovery (resolving `credentials_ref` to headers)
+  are deferred. ContextForge (REST→MCP) deferred until needed.
+- **Verified:** 63 tests; the LiteLLM gateway via LiteLLM's real `mock_response`
+  path and MCP discovery against a real in-memory FastMCP server (not
+  self-mocks); backend is ruff-clean.
 
 ### M4 — Execution plane: runtime + Run + Postbox (the heart)
 - **Goal:** an agent runs, pauses for a human, resumes — the "employee replies"
@@ -238,3 +244,7 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-24 | M2: DataSource, Template, Channel | `9d9e684` |
 | 2026-06-24 | M2: Trigger + Role | `41d52b2` |
 | 2026-06-24 | M2: Setting completes the M2 entities | `76d6afd` |
+| 2026-06-25 | docs: implementation plan + review/refinement | `4e82a19`, `891eb5a` |
+| 2026-06-25 | M3: LiteLLM gateway + ruff config & lint/format pass | `a0e2717` |
+| 2026-06-25 | M3: MCP tool-discovery gateway | `f1bb7d9` |
+| 2026-06-25 | M3: discover endpoint completes M3 | `5864999` |
