@@ -87,9 +87,9 @@
   path and MCP discovery against a real in-memory FastMCP server (not
   self-mocks); backend is ruff-clean.
 
-### M4 — Execution plane: runtime + Run + Postbox (the heart) — IN PROGRESS
+### M4 — Execution plane: runtime + Run + Postbox (the heart) — DONE
 - **Status:** ✅ M4.1 runs · ✅ M4.2 postbox · ✅ M4.3 tool use · ✅ M4.4 structured
-  output · ✅ M4.5 retrieval; remaining: M4.6 memory.
+  output · ✅ M4.5 retrieval · ✅ M4.6 memory — M4 complete.
 - **Goal:** an agent runs, pauses for a human, resumes — the "employee replies"
   mechanism.
 - **Plan:** `runtime/` LangGraph graph (uses an LLMConnection + selected tools
@@ -104,10 +104,17 @@
 - **Data & retrieval:** the runtime also queries the agent's **data sources**
   (vector/graph/wiki/relational) for grounding — the knowledge-grounded scenario
   (CLAUDE.md §2). Data sources reach the runtime via MCP or a thin driver adapter.
-- **Agent memory:** short-term (run/conversation context) and long-term (vector
-  recall via the app DB's `sqlite-vec` / `pgvector`, keyed by
-  `Agent.memory.vector_store_ref`) — this is where the embedded vector store earns
-  its place.
+- **Agent memory:** ✅ cross-run recall keyed by `Agent.memory.mode`
+  (none / short / long). Short = the most recent interactions (recency); long =
+  the semantically closest, via embeddings (`litellm.aembedding`) scored by
+  cosine similarity. A completed run is stored as a `MemoryRecord` (goal +
+  answer; embedded for long mode) and recalled into the next run's context.
+  **Deviation:** embeddings are stored as JSON and scored in Python rather than
+  with a native `sqlite-vec` / `pgvector` index — no native extension needed, and
+  per-agent memory counts are small at this stage; a vector index can replace the
+  scan behind the `runtime/memory.py` interface later. The embedding model is a
+  module default (`text-embedding-3-small`) and `Agent.memory.vector_store_ref`
+  remains a placeholder for an external store — both are follow-ups.
 - **Note:** `Run` and `InboxItem` are new entities here (new migration). M4 is the
   largest milestone — deliver it in sub-increments (runtime → postbox → structured
   output → retrieval → memory), verifying each.
@@ -258,3 +265,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M4.4a: structured output + Jinja2 render | `702da67` |
 | 2026-06-25 | M4.4b: run comparison | `a823d2b` |
 | 2026-06-25 | M4.5: data-source retrieval (RAG) | `b202074` |
+| 2026-06-25 | M4.6: agent memory (cross-run recall) — completes M4 | `525393d` |
