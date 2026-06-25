@@ -89,7 +89,7 @@
 
 ### M4 — Execution plane: runtime + Run + Postbox (the heart) — IN PROGRESS
 - **Status:** ✅ M4.1 runs · ✅ M4.2 postbox · ✅ M4.3 tool use · ✅ M4.4 structured
-  output + comparison; remaining: M4.5 retrieval · M4.6 memory.
+  output · ✅ M4.5 retrieval; remaining: M4.6 memory.
 - **Goal:** an agent runs, pauses for a human, resumes — the "employee replies"
   mechanism.
 - **Plan:** `runtime/` LangGraph graph (uses an LLMConnection + selected tools
@@ -257,3 +257,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M4.3b: per-tool approval gate | `9994988` |
 | 2026-06-25 | M4.4a: structured output + Jinja2 render | `702da67` |
 | 2026-06-25 | M4.4b: run comparison | `a823d2b` |
+| 2026-06-25 | M4.5: data-source retrieval (RAG) | `b202074` |
