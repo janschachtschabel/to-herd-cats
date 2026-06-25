@@ -162,12 +162,12 @@
   delivered to a mock channel.
 
 ### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
-- **Status:** ✅ M7.1 (CORS, scaffold, Agents + API client) · ✅ M7.2 (Material 3 +
-  CRUD shells over 9 entities + nav) · ✅ M7.3a config-driven create forms · ✅ M7.4
-  postbox UI (HITL accept/edit/reject/respond → resumes the run). Next: M7.3b (FK
-  reference fields + edit/PATCH + MCP `config_schema` form), M7.5 runs/metrics
-  views, M7.6 skill authoring. Deferred: i18n keys, Setting view, live screenshot
-  (preview on `wlo-suche`), Angular 22 (Node).
+- **Status:** ✅ M7.1–M7.2 (CORS, scaffold, Agents + 9-entity CRUD shells + nav,
+  Material 3) · ✅ M7.3a create forms · ✅ M7.4 postbox UI (HITL) · ✅ M7.5
+  runs/metrics view. Next: M7.3b (FK reference fields + edit/PATCH + MCP
+  `config_schema` form), M7.6 skill authoring + AI skill-creator, the i18n-key
+  pass. Deferred: Setting view, live screenshot (preview on `wlo-suche`),
+  Angular 22 (Node).
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -303,3 +303,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | M7.2b-ii: wire 9 entities + sidenav nav — completes M7.2 | `67f7b8a` |
 | 2026-06-25 | M7.3a: config-driven create forms (entity-form) | `e82b35d` |
 | 2026-06-25 | M7.4: postbox UI (HITL responses) | `142c9a8` |
+| 2026-06-25 | M7.5: runs & metrics view (observability) | `d7b4b57` |
