@@ -22,8 +22,10 @@ from app.repositories.inbox_items import SqlAlchemyInboxItemRepository
 from app.repositories.llm_connections import SqlAlchemyLLMConnectionRepository
 from app.repositories.mcp_servers import SqlAlchemyMCPServerRepository
 from app.repositories.runs import SqlAlchemyRunRepository
+from app.repositories.templates import SqlAlchemyTemplateRepository
 from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
+from app.runtime.structured import render_output, structure_output
 from app.runtime.tools import ResolvedTool
 from app.schemas.run import RunInput
 from app.services.base import EntityNotFoundError
@@ -46,6 +48,7 @@ class RunService:
         self._inbox = SqlAlchemyInboxItemRepository(session)
         self._tools = SqlAlchemyToolRepository(session)
         self._mcp = SqlAlchemyMCPServerRepository(session)
+        self._templates = SqlAlchemyTemplateRepository(session)
 
     async def get(self, run_id: str) -> Run:
         run = await self._runs.get(run_id)
@@ -77,7 +80,7 @@ class RunService:
         except Exception as exc:  # provider/runtime failure -> failed run
             self._mark_failed(run, exc)
         else:
-            self._apply_result(run, agent, result)
+            await self._apply_result(run, agent, result, connection)
         await self._session.commit()
         await self._session.refresh(run)
         return run
@@ -98,7 +101,7 @@ class RunService:
         except Exception as exc:
             self._mark_failed(run, exc)
         else:
-            self._apply_result(run, agent, result)
+            await self._apply_result(run, agent, result, connection)
 
         item.status = "answered"
         item.response = response
@@ -140,29 +143,56 @@ class RunService:
             )
         )
 
-    def _apply_result(self, run: Run, agent: Agent, result: GraphResult) -> None:
+    async def _apply_result(
+        self, run: Run, agent: Agent, result: GraphResult, connection: LLMConnection
+    ) -> None:
         # A resume can pause again (another tool approval, or the output review),
         # so this is shared by both create and respond.
         if result.interrupted:
             self._wait_for_human(run, agent, result)
         else:
-            self._finalize(run, result)
+            await self._finalize(run, agent, result, connection)
 
-    def _finalize(self, run: Run, result: GraphResult) -> None:
+    async def _finalize(
+        self, run: Run, agent: Agent, result: GraphResult, connection: LLMConnection
+    ) -> None:
         # The output decision comes from the graph (the review node), not the raw
         # response, so a tool-approval reply is never misread as an output verdict.
         decision = result.decision or {}
         action = decision.get("action", "accept")
         if action == "reject":
             run.result = {"rejected": True}
-        elif action == "edit":
-            run.result = {"content": decision.get("content", result.draft)}
-        else:  # accept / no approval needed
-            run.result = {"content": result.draft}
+        else:
+            content = decision.get("content", result.draft) if action == "edit" else result.draft
+            await self._apply_output(run, agent, content or "", connection)
         if result.usage:
             run.metrics = result.usage
         run.status = "completed"
         run.finished_at = utcnow()
+
+    async def _apply_output(
+        self, run: Run, agent: Agent, content: str, connection: LLMConnection
+    ) -> None:
+        # With a template, coerce the answer into its schema and render it;
+        # otherwise keep the plain-text answer.
+        template = await self._resolve_template(agent)
+        if template is None or not template.output_schema:
+            run.result = {"content": content}
+            return
+        structured = await structure_output(connection, content, template.output_schema)
+        run.result = structured
+        if template.render_template:
+            run.rendered_outputs = [
+                {
+                    "format": template.format,
+                    "content": render_output(template.render_template, structured),
+                }
+            ]
+
+    async def _resolve_template(self, agent: Agent):
+        if not agent.default_template_id:
+            return None
+        return await self._templates.get(agent.default_template_id)
 
     def _mark_failed(self, run: Run, exc: Exception) -> None:
         run.status = "failed"
