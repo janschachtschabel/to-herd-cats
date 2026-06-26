@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_tool_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.tool import ToolCreate, ToolRead, ToolUpdate
 from app.services.base import EntityNotFoundError
 from app.services.tools import ToolService
@@ -10,7 +12,12 @@ from app.services.tools import ToolService
 router = APIRouter(prefix="/tools", tags=["tools"])
 
 
-@router.post("", response_model=ToolRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ToolRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.TOOL_CREATE))],
+)
 async def create_tool(
     payload: ToolCreate, service: ToolService = Depends(get_tool_service)
 ) -> ToolRead:
@@ -35,7 +42,11 @@ async def get_tool(tool_id: str, service: ToolService = Depends(get_tool_service
     return ToolRead.model_validate(entity)
 
 
-@router.patch("/{tool_id}", response_model=ToolRead)
+@router.patch(
+    "/{tool_id}",
+    response_model=ToolRead,
+    dependencies=[Depends(require_permission(Permission.TOOL_UPDATE))],
+)
 async def update_tool(
     tool_id: str,
     payload: ToolUpdate,
@@ -48,7 +59,11 @@ async def update_tool(
     return ToolRead.model_validate(entity)
 
 
-@router.delete("/{tool_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{tool_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.TOOL_DELETE))],
+)
 async def delete_tool(tool_id: str, service: ToolService = Depends(get_tool_service)) -> None:
     try:
         await service.delete(tool_id)

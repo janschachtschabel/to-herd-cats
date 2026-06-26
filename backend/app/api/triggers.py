@@ -5,6 +5,8 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import get_trigger_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.trigger import (
     TriggerCreate,
     TriggerFireResult,
@@ -19,7 +21,12 @@ from app.triggers.runner import fire
 router = APIRouter(prefix="/triggers", tags=["triggers"])
 
 
-@router.post("", response_model=TriggerRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TriggerRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.TRIGGER_CREATE))],
+)
 async def create_trigger(
     payload: TriggerCreate, service: TriggerService = Depends(get_trigger_service)
 ) -> TriggerRead:
@@ -46,7 +53,11 @@ async def get_trigger(
     return TriggerRead.model_validate(entity)
 
 
-@router.patch("/{trigger_id}", response_model=TriggerRead)
+@router.patch(
+    "/{trigger_id}",
+    response_model=TriggerRead,
+    dependencies=[Depends(require_permission(Permission.TRIGGER_UPDATE))],
+)
 async def update_trigger(
     trigger_id: str,
     payload: TriggerUpdate,
@@ -59,7 +70,11 @@ async def update_trigger(
     return TriggerRead.model_validate(entity)
 
 
-@router.delete("/{trigger_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{trigger_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.TRIGGER_DELETE))],
+)
 async def delete_trigger(
     trigger_id: str, service: TriggerService = Depends(get_trigger_service)
 ) -> None:
@@ -69,7 +84,11 @@ async def delete_trigger(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "trigger not found") from None
 
 
-@router.post("/{trigger_id}/fire", response_model=TriggerFireResult)
+@router.post(
+    "/{trigger_id}/fire",
+    response_model=TriggerFireResult,
+    dependencies=[Depends(require_permission(Permission.TRIGGER_FIRE))],
+)
 async def fire_trigger(
     trigger_id: str,
     request: Request,

@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_channel_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.channel import ChannelCreate, ChannelRead, ChannelUpdate
 from app.services.base import EntityNotFoundError
 from app.services.channels import ChannelService
@@ -10,7 +12,12 @@ from app.services.channels import ChannelService
 router = APIRouter(prefix="/channels", tags=["channels"])
 
 
-@router.post("", response_model=ChannelRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ChannelRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.CHANNEL_CREATE))],
+)
 async def create_channel(
     payload: ChannelCreate, service: ChannelService = Depends(get_channel_service)
 ) -> ChannelRead:
@@ -37,7 +44,11 @@ async def get_channel(
     return ChannelRead.model_validate(entity)
 
 
-@router.patch("/{channel_id}", response_model=ChannelRead)
+@router.patch(
+    "/{channel_id}",
+    response_model=ChannelRead,
+    dependencies=[Depends(require_permission(Permission.CHANNEL_UPDATE))],
+)
 async def update_channel(
     channel_id: str,
     payload: ChannelUpdate,
@@ -50,7 +61,11 @@ async def update_channel(
     return ChannelRead.model_validate(entity)
 
 
-@router.delete("/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{channel_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.CHANNEL_DELETE))],
+)
 async def delete_channel(
     channel_id: str, service: ChannelService = Depends(get_channel_service)
 ) -> None:

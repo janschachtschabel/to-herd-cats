@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_llm_connection_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.llm_connection import (
     LLMConnectionCreate,
     LLMConnectionRead,
@@ -14,7 +16,12 @@ from app.services.llm_connections import LLMConnectionService
 router = APIRouter(prefix="/llm-connections", tags=["llm"])
 
 
-@router.post("", response_model=LLMConnectionRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=LLMConnectionRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.LLM_CONNECTION_CREATE))],
+)
 async def create_llm_connection(
     payload: LLMConnectionCreate,
     service: LLMConnectionService = Depends(get_llm_connection_service),
@@ -43,7 +50,11 @@ async def get_llm_connection(
     return LLMConnectionRead.model_validate(entity)
 
 
-@router.patch("/{connection_id}", response_model=LLMConnectionRead)
+@router.patch(
+    "/{connection_id}",
+    response_model=LLMConnectionRead,
+    dependencies=[Depends(require_permission(Permission.LLM_CONNECTION_UPDATE))],
+)
 async def update_llm_connection(
     connection_id: str,
     payload: LLMConnectionUpdate,
@@ -56,7 +67,11 @@ async def update_llm_connection(
     return LLMConnectionRead.model_validate(entity)
 
 
-@router.delete("/{connection_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{connection_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.LLM_CONNECTION_DELETE))],
+)
 async def delete_llm_connection(
     connection_id: str,
     service: LLMConnectionService = Depends(get_llm_connection_service),

@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_run_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.run import CompareRequest, CompareResult, RunInput, RunRead
 from app.services.base import EntityNotFoundError
 from app.services.runs import RunConfigError, RunService
@@ -14,6 +16,7 @@ router = APIRouter(tags=["runs"])
     "/agents/{agent_id}/runs",
     response_model=RunRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.RUN_CREATE))],
 )
 async def create_run(
     agent_id: str,

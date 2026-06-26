@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_mcp_server_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.integrations.mcp_gateway import MCPDiscoveryError
 from app.schemas.mcp_server import MCPServerCreate, MCPServerRead, MCPServerUpdate
 from app.services.base import EntityNotFoundError
@@ -11,7 +13,12 @@ from app.services.mcp_servers import MCPServerService
 router = APIRouter(prefix="/mcp-servers", tags=["mcp"])
 
 
-@router.post("", response_model=MCPServerRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=MCPServerRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.MCP_SERVER_CREATE))],
+)
 async def create_mcp_server(
     payload: MCPServerCreate,
     service: MCPServerService = Depends(get_mcp_server_service),
@@ -39,7 +46,11 @@ async def get_mcp_server(
     return MCPServerRead.model_validate(entity)
 
 
-@router.patch("/{server_id}", response_model=MCPServerRead)
+@router.patch(
+    "/{server_id}",
+    response_model=MCPServerRead,
+    dependencies=[Depends(require_permission(Permission.MCP_SERVER_UPDATE))],
+)
 async def update_mcp_server(
     server_id: str,
     payload: MCPServerUpdate,
@@ -52,7 +63,11 @@ async def update_mcp_server(
     return MCPServerRead.model_validate(entity)
 
 
-@router.delete("/{server_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{server_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.MCP_SERVER_DELETE))],
+)
 async def delete_mcp_server(
     server_id: str, service: MCPServerService = Depends(get_mcp_server_service)
 ) -> None:
@@ -62,7 +77,11 @@ async def delete_mcp_server(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "mcp server not found") from None
 
 
-@router.post("/{server_id}/discover", response_model=MCPServerRead)
+@router.post(
+    "/{server_id}/discover",
+    response_model=MCPServerRead,
+    dependencies=[Depends(require_permission(Permission.MCP_SERVER_DISCOVER))],
+)
 async def discover_mcp_server(
     server_id: str, service: MCPServerService = Depends(get_mcp_server_service)
 ) -> MCPServerRead:

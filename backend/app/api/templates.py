@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_template_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.template import TemplateCreate, TemplateRead, TemplateUpdate
 from app.services.base import EntityNotFoundError
 from app.services.templates import TemplateService
@@ -10,7 +12,12 @@ from app.services.templates import TemplateService
 router = APIRouter(prefix="/templates", tags=["templates"])
 
 
-@router.post("", response_model=TemplateRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TemplateRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.TEMPLATE_CREATE))],
+)
 async def create_template(
     payload: TemplateCreate, service: TemplateService = Depends(get_template_service)
 ) -> TemplateRead:
@@ -37,7 +44,11 @@ async def get_template(
     return TemplateRead.model_validate(entity)
 
 
-@router.patch("/{template_id}", response_model=TemplateRead)
+@router.patch(
+    "/{template_id}",
+    response_model=TemplateRead,
+    dependencies=[Depends(require_permission(Permission.TEMPLATE_UPDATE))],
+)
 async def update_template(
     template_id: str,
     payload: TemplateUpdate,
@@ -50,7 +61,11 @@ async def update_template(
     return TemplateRead.model_validate(entity)
 
 
-@router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{template_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.TEMPLATE_DELETE))],
+)
 async def delete_template(
     template_id: str, service: TemplateService = Depends(get_template_service)
 ) -> None:

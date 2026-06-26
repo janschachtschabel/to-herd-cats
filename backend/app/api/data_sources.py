@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_data_source_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.data_source import (
     DataSourceCreate,
     DataSourceRead,
@@ -14,7 +16,12 @@ from app.services.data_sources import DataSourceService
 router = APIRouter(prefix="/data-sources", tags=["data"])
 
 
-@router.post("", response_model=DataSourceRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=DataSourceRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.DATA_SOURCE_CREATE))],
+)
 async def create_data_source(
     payload: DataSourceCreate,
     service: DataSourceService = Depends(get_data_source_service),
@@ -42,7 +49,11 @@ async def get_data_source(
     return DataSourceRead.model_validate(entity)
 
 
-@router.patch("/{source_id}", response_model=DataSourceRead)
+@router.patch(
+    "/{source_id}",
+    response_model=DataSourceRead,
+    dependencies=[Depends(require_permission(Permission.DATA_SOURCE_UPDATE))],
+)
 async def update_data_source(
     source_id: str,
     payload: DataSourceUpdate,
@@ -55,7 +66,11 @@ async def update_data_source(
     return DataSourceRead.model_validate(entity)
 
 
-@router.delete("/{source_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{source_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.DATA_SOURCE_DELETE))],
+)
 async def delete_data_source(
     source_id: str, service: DataSourceService = Depends(get_data_source_service)
 ) -> None:

@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_skill_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.skill import SkillCreate, SkillRead, SkillUpdate
 from app.services.base import EntityNotFoundError
 from app.services.skills import SkillService
@@ -10,7 +12,12 @@ from app.services.skills import SkillService
 router = APIRouter(prefix="/skills", tags=["skills"])
 
 
-@router.post("", response_model=SkillRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SkillRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.SKILL_CREATE))],
+)
 async def create_skill(
     payload: SkillCreate, service: SkillService = Depends(get_skill_service)
 ) -> SkillRead:
@@ -35,7 +42,11 @@ async def get_skill(skill_id: str, service: SkillService = Depends(get_skill_ser
     return SkillRead.model_validate(entity)
 
 
-@router.patch("/{skill_id}", response_model=SkillRead)
+@router.patch(
+    "/{skill_id}",
+    response_model=SkillRead,
+    dependencies=[Depends(require_permission(Permission.SKILL_UPDATE))],
+)
 async def update_skill(
     skill_id: str,
     payload: SkillUpdate,
@@ -48,7 +59,11 @@ async def update_skill(
     return SkillRead.model_validate(entity)
 
 
-@router.delete("/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{skill_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.SKILL_DELETE))],
+)
 async def delete_skill(skill_id: str, service: SkillService = Depends(get_skill_service)) -> None:
     try:
         await service.delete(skill_id)

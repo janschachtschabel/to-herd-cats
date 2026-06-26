@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_setting_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.setting import SettingRead, SettingScope, SettingWrite
 from app.services.base import EntityNotFoundError
 from app.services.settings import SettingService
@@ -32,7 +34,11 @@ async def get_setting(
     return SettingRead.model_validate(setting)
 
 
-@router.put("/{scope}/{key}", response_model=SettingRead)
+@router.put(
+    "/{scope}/{key}",
+    response_model=SettingRead,
+    dependencies=[Depends(require_permission(Permission.SETTING_UPDATE))],
+)
 async def put_setting(
     scope: SettingScope,
     key: str,
@@ -43,7 +49,11 @@ async def put_setting(
     return SettingRead.model_validate(setting)
 
 
-@router.delete("/{scope}/{key}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{scope}/{key}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.SETTING_DELETE))],
+)
 async def delete_setting(
     scope: SettingScope,
     key: str,

@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_role_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.role import RoleCreate, RoleRead, RoleUpdate
 from app.services.base import EntityNotFoundError
 from app.services.roles import RoleService
@@ -10,7 +12,12 @@ from app.services.roles import RoleService
 router = APIRouter(prefix="/roles", tags=["auth"])
 
 
-@router.post("", response_model=RoleRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RoleRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.ROLE_CREATE))],
+)
 async def create_role(
     payload: RoleCreate, service: RoleService = Depends(get_role_service)
 ) -> RoleRead:
@@ -35,7 +42,11 @@ async def get_role(role_id: str, service: RoleService = Depends(get_role_service
     return RoleRead.model_validate(entity)
 
 
-@router.patch("/{role_id}", response_model=RoleRead)
+@router.patch(
+    "/{role_id}",
+    response_model=RoleRead,
+    dependencies=[Depends(require_permission(Permission.ROLE_UPDATE))],
+)
 async def update_role(
     role_id: str,
     payload: RoleUpdate,
@@ -48,7 +59,11 @@ async def update_role(
     return RoleRead.model_validate(entity)
 
 
-@router.delete("/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{role_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.ROLE_DELETE))],
+)
 async def delete_role(role_id: str, service: RoleService = Depends(get_role_service)) -> None:
     try:
         await service.delete(role_id)
