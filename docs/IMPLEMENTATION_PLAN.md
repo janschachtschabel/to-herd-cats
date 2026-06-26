@@ -197,10 +197,17 @@
   requires a permission (`<resource>.<action>`; full catalog in
   `core/permissions.py`), and a route-introspection test asserts no write route
   ships unguarded. `POST /runs/compare` stays open (read-only analysis).
-  Remaining: **M8.2b** frontend route guards + permission-aware UI; **resource
-  ownership** (owner column + subject) — deferred to **M8.3**, since the dev
-  stub has no stable per-user subject; **M8.3** real Keycloak/OIDC (replace
-  `get_principal` with token→subject/roles).
+  ✅ **M8.2b — frontend route guards + permission-aware UI.** `GET /me` returns
+  the principal; an `AuthService` loads it (app initializer) and answers
+  `has(permission)`; a `requirePermission` guard protects every `/new` and
+  `/:id/edit` route; the entity list/form, agents (create + run) and inbox
+  (respond) hide actions the principal lacks. A `devRoles` interceptor sends
+  `X-Dev-Roles` (set via a toolbar input) so a developer can act as specific
+  roles before Keycloak.
+  Remaining: **resource ownership** (owner column + subject) — deferred to
+  **M8.3**, since the dev stub has no stable per-user subject; **M8.3** real
+  Keycloak/OIDC (replace `get_principal` and the `X-Dev-Roles` stub with the
+  token's subject/roles).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
   ownership; backend dependency guards + frontend route guards; permissions like
@@ -349,3 +356,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M7.7: in-house i18n (service + `t` pipe + `de` map); key all UI chrome/errors, then entity config labels + run-fallback goal — completes M7 | `943df97`, `d3ac6fe` |
 | 2026-06-26 | M8.1: RBAC permission model + `require_permission` guards (agents writes, inbox respond) on a dev-stub identity (`auth_dev_mode`) | `3b12fc9` |
 | 2026-06-26 | M8.2a: guard all write routers (30 endpoints) with `<resource>.<action>` permissions + route-coverage invariant test | `41f8568` |
+| 2026-06-26 | M8.2b: `GET /me` + frontend AuthService/interceptor/initializer, then `requirePermission` route guards + permission-gated UI (dev-roles switcher) | `92877e5`, `2483236`, `61a7b19` |
