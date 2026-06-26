@@ -14,12 +14,14 @@ Everything is pluggable; nothing is monolithic. Tools, data sources and channels
 are connected at runtime through an **MCP gateway** — never hard-wired — which is
 what keeps the system modular and vendor-neutral.
 
-> **Status (2026-06-25):** M0–M7 in progress. The FastAPI backend (control API,
+> **Status (2026-06-26):** M0–M8 done. The FastAPI backend (control API,
 > LangGraph runtime, all four run modes, postbox, observability) and an Angular
-> cockpit (agents, postbox, runs/metrics, generic CRUD over the entities) are
-> implemented and tested (~106 backend + 17 frontend tests). Remaining: auth/RBAC
-> (M8), Postgres parity & packaging (M9). See
-> [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) for the roadmap.
+> cockpit (agents, postbox, runs/metrics, generic CRUD, i18n) are implemented and
+> tested (~139 backend + 32 frontend tests), with **Auth & RBAC** complete:
+> permission-guarded routes, OIDC (Keycloak) token verification + login, and
+> agent ownership. Remaining: executable-skill sandbox (M4b), Postgres parity &
+> packaging (M9). See [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)
+> for the roadmap.
 
 ## What it does
 

@@ -184,7 +184,7 @@
 - **Verify:** `ng build` + `ng test` green; UI drives the real API; every UI
   string is an i18n key.
 
-### M8 — Auth & RBAC (Keycloak) — IN PROGRESS
+### M8 — Auth & RBAC (Keycloak) — COMPLETE
 - **Status:** ✅ **M8.1 — RBAC model + guards on a dev stub.** Roles carry a
   permission set (`Role.permissions`); `app/api/security.py` resolves a
   `Principal` and `require_permission(...)` guards routes (agents
@@ -220,8 +220,11 @@
   (`*`) when the roles table is empty, so a deployment with the dev stub off is
   manageable — closes the first-role chicken-and-egg found during M8.3b
   verification.
-  Remaining: **M8.3c** resource ownership (owner column + subject now that the
-  token carries a stable `sub`).
+  ✅ **M8.3c — agent ownership.** Agents record `created_by` (the principal
+  subject); update/delete go through `require_agent_access` — allowed if the
+  principal holds the manage permission **or** owns the agent. `created_by` is
+  server-set and read-only (AgentRead only), so ownership can't be set or
+  reassigned by a client. M8 complete.
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
   ownership; backend dependency guards + frontend route guards; permissions like
@@ -374,3 +377,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.3a: OIDC (Keycloak) bearer-token verification (RS256/JWKS, iss/aud/exp); token principal preferred over the dev stub; PyJWT[crypto] | `b8ef6cb` |
 | 2026-06-26 | M8.3b: Keycloak infra (compose + cockpit realm) + frontend OIDC login (angular-auth-oidc-client, bearer token, login/logout) | `f8f3cc2`, `8e500e1` |
 | 2026-06-26 | M8 bootstrap: seed an `admin` role (`*`) on startup when roles are empty — closes the first-role chicken-and-egg (found verifying M8.3b vs real Keycloak) | `09899c9` |
+| 2026-06-26 | M8.3c: agent ownership (`created_by`; owner-or-permission update/delete) + migration — completes M8 | `6ee75e2` |
