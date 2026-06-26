@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     # explicitly rather than "*" so credentials can be added safely later.
     cors_origins: list[str] = ["http://localhost:4200"]
 
+    # Authorization dev stub (until Keycloak/OIDC lands). When true, the cockpit
+    # is usable without a login: a request with no ``X-Dev-Roles`` header is a
+    # wildcard admin, and the header simulates a user's roles. When false the
+    # stub is off — every request is anonymous and guarded routes deny by
+    # default (the header is not honored). See app/api/security.py.
+    auth_dev_mode: bool = True
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_inbox_service, get_run_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.inbox_item import InboxItemRead, InboxResponse
 from app.schemas.run import RunRead
 from app.services.base import EntityNotFoundError
@@ -31,7 +33,11 @@ async def get_inbox_item(
     return InboxItemRead.model_validate(item)
 
 
-@router.post("/{item_id}/respond", response_model=RunRead)
+@router.post(
+    "/{item_id}/respond",
+    response_model=RunRead,
+    dependencies=[Depends(require_permission(Permission.RUN_APPROVE))],
+)
 async def respond_to_inbox(
     item_id: str,
     payload: InboxResponse,

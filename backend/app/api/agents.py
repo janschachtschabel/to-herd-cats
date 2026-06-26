@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_agent_service
+from app.api.security import require_permission
+from app.core.permissions import Permission
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.services.agents import AgentService
 from app.services.base import EntityNotFoundError
@@ -10,7 +12,12 @@ from app.services.base import EntityNotFoundError
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 
-@router.post("", response_model=AgentRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=AgentRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(Permission.AGENT_CREATE))],
+)
 async def create_agent(
     payload: AgentCreate, service: AgentService = Depends(get_agent_service)
 ) -> AgentRead:
@@ -35,7 +42,11 @@ async def get_agent(agent_id: str, service: AgentService = Depends(get_agent_ser
     return AgentRead.model_validate(agent)
 
 
-@router.patch("/{agent_id}", response_model=AgentRead)
+@router.patch(
+    "/{agent_id}",
+    response_model=AgentRead,
+    dependencies=[Depends(require_permission(Permission.AGENT_UPDATE))],
+)
 async def update_agent(
     agent_id: str,
     payload: AgentUpdate,
@@ -48,7 +59,11 @@ async def update_agent(
     return AgentRead.model_validate(agent)
 
 
-@router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{agent_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission(Permission.AGENT_DELETE))],
+)
 async def delete_agent(agent_id: str, service: AgentService = Depends(get_agent_service)) -> None:
     try:
         await service.delete(agent_id)
