@@ -1,5 +1,5 @@
 <section class="inbox">
-  <h2>Postbox</h2>
+  <h2>{{ 'inbox.heading' | t }}</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -8,7 +8,7 @@
   @if (loading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (items().length === 0) {
-    <p>Keine Einträge.</p>
+    <p>{{ 'inbox.empty' | t }}</p>
   } @else {
     @for (item of items(); track item.id) {
       <mat-card class="item">
@@ -21,11 +21,11 @@
 
           @if (item.status === 'pending') {
             <mat-form-field appearance="outline" class="content">
-              <mat-label>Antwort / Bearbeitung (optional)</mat-label>
+              <mat-label>{{ 'inbox.reply' | t }}</mat-label>
               <textarea matInput rows="3" [(ngModel)]="contents[item.id]"></textarea>
             </mat-form-field>
           } @else if (item.response) {
-            <p class="answered">Beantwortet: {{ item.response['action'] }}</p>
+            <p class="answered">{{ 'inbox.answered' | t }}: {{ item.response['action'] }}</p>
           }
         </mat-card-content>
 

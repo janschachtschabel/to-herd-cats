@@ -1,5 +1,5 @@
 <mat-toolbar>
-  <span>{{ title() }}</span>
+  <span>{{ 'app.title' | t }}</span>
 </mat-toolbar>
 <mat-sidenav-container class="app-shell">
   <mat-sidenav mode="side" opened>
@@ -9,12 +9,14 @@
         routerLink="/"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
-        >Agenten</a
+        >{{ 'nav.agents' | t }}</a
       >
-      <a mat-list-item routerLink="/inbox" routerLinkActive="active">Postbox</a>
-      <a mat-list-item routerLink="/runs" routerLinkActive="active">Runs</a>
+      <a mat-list-item routerLink="/inbox" routerLinkActive="active">{{ 'nav.inbox' | t }}</a>
+      <a mat-list-item routerLink="/runs" routerLinkActive="active">{{ 'nav.runs' | t }}</a>
       @for (entity of entities; track entity.path) {
-        <a mat-list-item [routerLink]="entity.path" routerLinkActive="active">{{ entity.title }}</a>
+        <a mat-list-item [routerLink]="entity.path" routerLinkActive="active">{{
+          entity.title | t
+        }}</a>
       }
     </mat-nav-list>
   </mat-sidenav>

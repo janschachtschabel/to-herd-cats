@@ -1,5 +1,5 @@
 <section class="entity-form">
-  <h2>{{ title() }} – {{ id() ? 'bearbeiten' : 'neu' }}</h2>
+  <h2>{{ title() | t }} – {{ (id() ? 'form.edit' : 'form.new') | t }}</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -11,13 +11,13 @@
         @case ('checkbox') {
           <div>
             <mat-checkbox [name]="field.key" [(ngModel)]="model[field.key]">{{
-              field.label
+              field.label | t
             }}</mat-checkbox>
           </div>
         }
         @case ('select') {
           <mat-form-field appearance="outline">
-            <mat-label>{{ field.label }}</mat-label>
+            <mat-label>{{ field.label | t }}</mat-label>
             <mat-select
               [name]="field.key"
               [(ngModel)]="model[field.key]"
@@ -31,7 +31,7 @@
         }
         @case ('reference') {
           <mat-form-field appearance="outline">
-            <mat-label>{{ field.label }}</mat-label>
+            <mat-label>{{ field.label | t }}</mat-label>
             <mat-select
               [name]="field.key"
               [(ngModel)]="model[field.key]"
@@ -45,7 +45,7 @@
         }
         @case ('textarea') {
           <mat-form-field appearance="outline">
-            <mat-label>{{ field.label }}</mat-label>
+            <mat-label>{{ field.label | t }}</mat-label>
             <textarea
               matInput
               rows="6"
@@ -57,7 +57,7 @@
         }
         @default {
           <mat-form-field appearance="outline">
-            <mat-label>{{ field.label }}</mat-label>
+            <mat-label>{{ field.label | t }}</mat-label>
             <input
               matInput
               [name]="field.key"
@@ -69,8 +69,8 @@
       }
     }
     <div class="actions">
-      <button mat-flat-button type="submit">Speichern</button>
-      <a mat-button [routerLink]="'/' + path()">Abbrechen</a>
+      <button mat-flat-button type="submit">{{ 'form.save' | t }}</button>
+      <a mat-button [routerLink]="'/' + path()">{{ 'form.cancel' | t }}</a>
     </div>
   </form>
 </section>

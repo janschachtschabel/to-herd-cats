@@ -14,6 +14,8 @@ import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 
 import { CrudApi } from '../../core/crud-api';
+import { I18n } from '../../core/i18n';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 export interface Column {
   key: string;
@@ -25,19 +27,27 @@ interface Row {
   [key: string]: unknown;
 }
 
-/** Generic list of a backend collection with per-row delete.
+/** Generic list of a backend collection with per-row edit/delete.
 
     Title, REST path and columns are inputs (bound from the route config), so one
     component serves every simple entity. Create/edit forms are rendered from
-    schema separately (M7.3). */
+    schema separately (entity-form). */
 @Component({
   selector: 'app-entity-list',
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule],
+  imports: [
+    RouterLink,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTableModule,
+    TranslatePipe,
+  ],
   templateUrl: './entity-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityList implements OnInit {
   private readonly api = inject(CrudApi);
+  private readonly i18n = inject(I18n);
 
   readonly title = input.required<string>();
   readonly path = input.required<string>();
@@ -63,7 +73,7 @@ export class EntityList implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Daten konnten nicht geladen werden.');
+        this.error.set(this.i18n.t('list.loadError'));
         this.loading.set(false);
       },
     });
@@ -72,7 +82,7 @@ export class EntityList implements OnInit {
   delete(id: string): void {
     this.api.remove(this.path(), id).subscribe({
       next: () => this.reload(),
-      error: () => this.error.set('Löschen fehlgeschlagen.'),
+      error: () => this.error.set(this.i18n.t('list.deleteError')),
     });
   }
 }

@@ -3,6 +3,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { forkJoin } from 'rxjs';
 
+import { I18n } from '../../core/i18n';
+import { TranslatePipe } from '../../core/translate.pipe';
 import { MetricsSummary, Run } from './run';
 import { RunsApi } from './runs-api';
 
@@ -10,12 +12,13 @@ import { RunsApi } from './runs-api';
     each run expandable to its result. Read-only. */
 @Component({
   selector: 'app-runs',
-  imports: [MatExpansionModule, MatProgressBarModule],
+  imports: [MatExpansionModule, MatProgressBarModule, TranslatePipe],
   templateUrl: './runs.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Runs implements OnInit {
   private readonly api = inject(RunsApi);
+  private readonly i18n = inject(I18n);
 
   readonly runs = signal<Run[]>([]);
   readonly summary = signal<MetricsSummary | null>(null);
@@ -30,7 +33,7 @@ export class Runs implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Runs konnten nicht geladen werden.');
+        this.error.set(this.i18n.t('runs.loadError'));
         this.loading.set(false);
       },
     });

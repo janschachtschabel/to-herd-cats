@@ -1,8 +1,8 @@
 <section class="entity-list">
   <div class="list-header">
-    <h2>{{ title() }}</h2>
+    <h2>{{ title() | t }}</h2>
     @if (creatable()) {
-      <a mat-flat-button [routerLink]="'/' + path() + '/new'">Neu</a>
+      <a mat-flat-button [routerLink]="'/' + path() + '/new'">{{ 'list.new' | t }}</a>
     }
   </div>
 
@@ -13,12 +13,12 @@
   @if (loading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (rows().length === 0) {
-    <p>Keine Einträge.</p>
+    <p>{{ 'list.empty' | t }}</p>
   } @else {
     <table mat-table [dataSource]="rows()">
       @for (col of columns(); track col.key) {
         <ng-container [matColumnDef]="col.key">
-          <th mat-header-cell *matHeaderCellDef>{{ col.label }}</th>
+          <th mat-header-cell *matHeaderCellDef>{{ col.label | t }}</th>
           <td mat-cell *matCellDef="let row">{{ row[col.key] }}</td>
         </ng-container>
       }
@@ -29,12 +29,12 @@
             <a
               mat-icon-button
               [routerLink]="'/' + path() + '/' + row.id + '/edit'"
-              aria-label="Bearbeiten"
+              [attr.aria-label]="'list.edit' | t"
             >
               <mat-icon>edit</mat-icon>
             </a>
           }
-          <button mat-icon-button aria-label="Löschen" (click)="delete(row.id)">
+          <button mat-icon-button [attr.aria-label]="'list.delete' | t" (click)="delete(row.id)">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

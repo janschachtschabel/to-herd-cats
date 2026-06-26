@@ -1,5 +1,5 @@
 <section class="runs">
-  <h2>Runs</h2>
+  <h2>{{ 'runs.heading' | t }}</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -10,15 +10,15 @@
   } @else {
     @if (summary(); as s) {
       <div class="summary">
-        <span>Runs gesamt: {{ s.total_runs }}</span>
-        <span>Status: {{ byStatus(s) }}</span>
-        <span>Tokens: {{ s.total_tokens }}</span>
-        <span>Kosten: {{ s.total_cost }}</span>
+        <span>{{ 'runs.total' | t }}: {{ s.total_runs }}</span>
+        <span>{{ 'runs.status' | t }}: {{ byStatus(s) }}</span>
+        <span>{{ 'runs.tokens' | t }}: {{ s.total_tokens }}</span>
+        <span>{{ 'runs.cost' | t }}: {{ s.total_cost }}</span>
       </div>
     }
 
     @if (runs().length === 0) {
-      <p>Keine Runs.</p>
+      <p>{{ 'runs.empty' | t }}</p>
     } @else {
       <mat-accordion>
         @for (run of runs(); track run.id) {

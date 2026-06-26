@@ -8,6 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 
 import { CrudApi } from '../../core/crud-api';
+import { I18n } from '../../core/i18n';
+import { TranslatePipe } from '../../core/translate.pipe';
 import { FormField, SelectOption } from '../../features/entities';
 
 /** Config-driven create or edit form for a backend collection.
@@ -26,6 +28,7 @@ import { FormField, SelectOption } from '../../features/entities';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    TranslatePipe,
   ],
   templateUrl: './entity-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +36,7 @@ import { FormField, SelectOption } from '../../features/entities';
 export class EntityForm implements OnInit {
   private readonly api = inject(CrudApi);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   readonly title = input.required<string>();
   readonly path = input.required<string>();
@@ -72,7 +76,7 @@ export class EntityForm implements OnInit {
         }
         this.model = model;
       },
-      error: () => this.error.set('Eintrag konnte nicht geladen werden.'),
+      error: () => this.error.set(this.i18n.t('form.loadError')),
     });
   }
 
@@ -89,7 +93,7 @@ export class EntityForm implements OnInit {
         }));
         this.options.update((current) => ({ ...current, [field.key]: opts }));
       },
-      error: () => this.error.set('Auswahllisten konnten nicht geladen werden.'),
+      error: () => this.error.set(this.i18n.t('form.optionsError')),
     });
   }
 
@@ -97,7 +101,7 @@ export class EntityForm implements OnInit {
     this.error.set(null);
     const missing = this.fields().find((field) => field.required && !this.model[field.key]);
     if (missing) {
-      this.error.set(`Pflichtfeld fehlt: ${missing.label}`);
+      this.error.set(this.i18n.t('form.requiredMissing') + ': ' + this.i18n.t(missing.label));
       return;
     }
     const id = this.id();
@@ -106,7 +110,7 @@ export class EntityForm implements OnInit {
       : this.api.create(this.path(), this.buildPayload());
     request.subscribe({
       next: () => this.router.navigateByUrl('/' + this.path()),
-      error: () => this.error.set('Speichern fehlgeschlagen.'),
+      error: () => this.error.set(this.i18n.t('form.saveError')),
     });
   }
 

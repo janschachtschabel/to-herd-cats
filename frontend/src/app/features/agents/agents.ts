@@ -7,12 +7,14 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 
+import { I18n } from '../../core/i18n';
+import { TranslatePipe } from '../../core/translate.pipe';
 import { Agent } from './agent';
 import { AgentsApi } from './agents-api';
 
 const DEFAULT_GOAL = 'Führe deine konfigurierte Aufgabe aus.';
 
-/** Lists the agents from the backend and creates new ones.
+/** Lists the agents from the backend, creates new ones, and starts a run.
 
     Zoneless change detection is driven by signal writes, so the API results are
     stored in signals rather than plain fields. */
@@ -25,6 +27,7 @@ const DEFAULT_GOAL = 'Führe deine konfigurierte Aufgabe aus.';
     MatInputModule,
     MatListModule,
     MatProgressBarModule,
+    TranslatePipe,
   ],
   templateUrl: './agents.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +35,7 @@ const DEFAULT_GOAL = 'Führe deine konfigurierte Aufgabe aus.';
 export class Agents {
   private readonly api = inject(AgentsApi);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   readonly agents = signal<Agent[]>([]);
   readonly loading = signal(true);
@@ -53,7 +57,7 @@ export class Agents {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Agenten konnten nicht geladen werden.');
+        this.error.set(this.i18n.t('agents.loadError'));
         this.loading.set(false);
       },
     });
@@ -70,7 +74,7 @@ export class Agents {
         this.goal = '';
         this.reload();
       },
-      error: () => this.error.set('Agent konnte nicht erstellt werden.'),
+      error: () => this.error.set(this.i18n.t('agents.createError')),
     });
   }
 
@@ -78,7 +82,7 @@ export class Agents {
     this.error.set(null);
     this.api.runAgent(agent.id, agent.goal?.trim() || DEFAULT_GOAL).subscribe({
       next: () => this.router.navigateByUrl('/runs'),
-      error: () => this.error.set('Run konnte nicht gestartet werden.'),
+      error: () => this.error.set(this.i18n.t('agents.runError')),
     });
   }
 }

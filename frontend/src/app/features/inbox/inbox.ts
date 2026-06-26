@@ -6,6 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
+import { I18n } from '../../core/i18n';
+import { TranslatePipe } from '../../core/translate.pipe';
 import { InboxApi } from './inbox-api';
 import { InboxItem } from './inbox-item';
 
@@ -20,12 +22,14 @@ import { InboxItem } from './inbox-item';
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    TranslatePipe,
   ],
   templateUrl: './inbox.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Inbox implements OnInit {
   private readonly api = inject(InboxApi);
+  private readonly i18n = inject(I18n);
 
   readonly items = signal<InboxItem[]>([]);
   readonly loading = signal(true);
@@ -47,7 +51,7 @@ export class Inbox implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Postbox konnte nicht geladen werden.');
+        this.error.set(this.i18n.t('inbox.loadError'));
         this.loading.set(false);
       },
     });
@@ -65,7 +69,7 @@ export class Inbox implements OnInit {
         this.contents[item.id] = '';
         this.reload();
       },
-      error: () => this.error.set('Antwort fehlgeschlagen.'),
+      error: () => this.error.set(this.i18n.t('inbox.respondError')),
     });
   }
 }
