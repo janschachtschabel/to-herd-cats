@@ -18,6 +18,9 @@ dependencies = [
     "jinja2>=3.1.6",
     "croniter>=6.2.2",
     "langgraph-checkpoint-sqlite>=3.1.0",
+    # OIDC (Keycloak) access-token verification: RS256 + JWKS. The crypto extra
+    # pulls in `cryptography` for asymmetric signature checks.
+    "pyjwt[crypto]>=2.9",
 ]
 
 [dependency-groups]

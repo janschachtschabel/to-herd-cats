@@ -29,12 +29,22 @@ class Settings(BaseSettings):
     # explicitly rather than "*" so credentials can be added safely later.
     cors_origins: list[str] = ["http://localhost:4200"]
 
-    # Authorization dev stub (until Keycloak/OIDC lands). When true, the cockpit
-    # is usable without a login: a request with no ``X-Dev-Roles`` header is a
-    # wildcard admin, and the header simulates a user's roles. When false the
-    # stub is off — every request is anonymous and guarded routes deny by
-    # default (the header is not honored). See app/api/security.py.
+    # Authorization dev stub (used until/unless an OIDC token is presented). When
+    # true, the cockpit is usable without a login: a request with no
+    # ``X-Dev-Roles`` header is a wildcard admin, and the header simulates a
+    # user's roles. When false the stub is off — every request is anonymous and
+    # guarded routes deny by default (the header is not honored). A verified OIDC
+    # bearer token always takes precedence over the stub. See app/api/security.py.
     auth_dev_mode: bool = True
+
+    # OIDC (Keycloak) access-token verification. With ``oidc_issuer`` and
+    # ``oidc_jwks_uri`` both set, a Bearer token is verified (RS256 via JWKS,
+    # checking iss/aud/exp) and its realm roles resolved to permissions — the
+    # role→permission mapping stays in the app. Empty = OIDC off (dev stub
+    # applies). ``oidc_audience`` is the expected ``aud`` claim (the client id).
+    oidc_issuer: str = ""
+    oidc_audience: str = "cockpit"
+    oidc_jwks_uri: str = ""
 
 
 @lru_cache

@@ -24,6 +24,7 @@ from app.api.templates import router as templates_router
 from app.api.tools import router as tools_router
 from app.api.triggers import router as triggers_router
 from app.core.db import make_engine, make_session_factory
+from app.core.oidc import build_verifier
 from app.core.settings import Settings, get_settings
 from app.runtime.checkpointer import open_app_checkpointer
 from app.runtime.graph import set_checkpointer
@@ -59,6 +60,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
     app.state.settings = settings
+    # OIDC token verifier (None unless configured); the auth layer reads it.
+    app.state.oidc = build_verifier(settings)
     # Strong refs to detached background tasks (autonomous loops) so the event
     # loop does not garbage-collect them mid-flight.
     app.state.background_tasks = set()
