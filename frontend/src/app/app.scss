@@ -17,6 +17,11 @@
   background: var(--mat-sys-secondary-container);
 }
 
+// Login / logout button, pushed to the toolbar's trailing edge.
+.session {
+  margin-left: auto;
+}
+
 // Dev-only "act as roles" input, pushed to the toolbar's trailing edge.
 .dev-roles {
   margin-left: auto;

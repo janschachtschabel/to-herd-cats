@@ -7,6 +7,8 @@ export const MESSAGES_DE: Record<string, string> = {
   // App shell / navigation
   'app.title': 'Agent Cockpit',
   'app.devRoles': 'Rollen (dev)',
+  'app.login': 'Anmelden',
+  'app.logout': 'Abmelden',
   'nav.agents': 'Agenten',
   'nav.inbox': 'Postbox',
   'nav.runs': 'Runs',

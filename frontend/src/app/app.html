@@ -1,12 +1,20 @@
 <mat-toolbar>
   <span>{{ 'app.title' | t }}</span>
-  <input
-    class="dev-roles"
-    [value]="auth.devRoles()"
-    (change)="setDevRoles($event)"
-    [attr.placeholder]="'app.devRoles' | t"
-    [attr.aria-label]="'app.devRoles' | t"
-  />
+  @if (session.oidcEnabled) {
+    @if (session.authenticated()) {
+      <button class="session" mat-button (click)="session.logout()">{{ 'app.logout' | t }}</button>
+    } @else {
+      <button class="session" mat-button (click)="session.login()">{{ 'app.login' | t }}</button>
+    }
+  } @else {
+    <input
+      class="dev-roles"
+      [value]="auth.devRoles()"
+      (change)="setDevRoles($event)"
+      [attr.placeholder]="'app.devRoles' | t"
+      [attr.aria-label]="'app.devRoles' | t"
+    />
+  }
 </mat-toolbar>
 <mat-sidenav-container class="app-shell">
   <mat-sidenav mode="side" opened>
