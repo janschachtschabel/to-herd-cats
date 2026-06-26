@@ -192,9 +192,14 @@
   Identity is a dev stub gated by `auth_dev_mode`: an `X-Dev-Roles` header maps
   to the named roles' unioned permissions, header-less = wildcard admin (so the
   cockpit is usable without a login); with the flag off the stub is inactive —
-  anonymous, guarded routes deny, header not honored. Remaining: **M8.2** roll
-  guards across the other write routers + resource ownership (owner column +
-  subject) + frontend route guards; **M8.3** real Keycloak/OIDC (replace
+  anonymous, guarded routes deny, header not honored.
+  ✅ **M8.2a — guards across all write routers.** Every mutating endpoint now
+  requires a permission (`<resource>.<action>`; full catalog in
+  `core/permissions.py`), and a route-introspection test asserts no write route
+  ships unguarded. `POST /runs/compare` stays open (read-only analysis).
+  Remaining: **M8.2b** frontend route guards + permission-aware UI; **resource
+  ownership** (owner column + subject) — deferred to **M8.3**, since the dev
+  stub has no stable per-user subject; **M8.3** real Keycloak/OIDC (replace
   `get_principal` with token→subject/roles).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
@@ -343,3 +348,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | chore: ignore SQLite WAL/SHM checkpointer sidecars | `0138260` |
 | 2026-06-26 | M7.7: in-house i18n (service + `t` pipe + `de` map); key all UI chrome/errors, then entity config labels + run-fallback goal — completes M7 | `943df97`, `d3ac6fe` |
 | 2026-06-26 | M8.1: RBAC permission model + `require_permission` guards (agents writes, inbox respond) on a dev-stub identity (`auth_dev_mode`) | `3b12fc9` |
+| 2026-06-26 | M8.2a: guard all write routers (30 endpoints) with `<resource>.<action>` permissions + route-coverage invariant test | `41f8568` |
