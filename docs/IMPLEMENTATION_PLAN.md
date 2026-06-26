@@ -161,14 +161,16 @@
 - **Verify:** a trace/metric is produced (mock/local Langfuse); an `InboxItem` is
   delivered to a mock channel.
 
-### M7 — Frontend cockpit (Angular 21) + skill authoring — IN PROGRESS
-- **Status:** ✅ **M7.1–M7.6 feature-complete** — scaffold, Material 3, all-entity
+### M7 — Frontend cockpit (Angular 21) + skill authoring — COMPLETE
+- **Status:** ✅ **M7.1–M7.7 complete** — scaffold, Material 3, all-entity
   CRUD shells + create/edit forms (incl. FK reference fields & textarea), agents
-  run, postbox (HITL), runs/metrics, skill authoring (SKILL.md body). Remaining
-  for M7: the **i18n-key pass** (default `de`). Deferred: Setting view, MCP
-  `config_schema` form (needs a backend config-value field), the AI skill-creator
-  + skill-commands editor (needs a seed-agent mechanism + a configured LLM), live
-  screenshot (preview on `wlo-suche`), Angular 22 (Node).
+  run, postbox (HITL), runs/metrics, skill authoring (SKILL.md body), and the
+  **i18n-key pass** (M7.7): an in-house I18n service + `t` pipe over a keyed `de`
+  map — every UI string (chrome, errors, entity titles/labels, the run-fallback
+  goal) is now a key; a second locale is just another map. Deferred: Setting
+  view, MCP `config_schema` form (needs a backend config-value field), the AI
+  skill-creator + skill-commands editor (needs a seed-agent mechanism + a
+  configured LLM), live screenshot (preview on `wlo-suche`), Angular 22 (Node).
 - **Goal:** a usable cockpit for non-programmers (CLAUDE.md §9.8).
 - **Plan:** Angular 21 zoneless/signals/standalone + Material 3, Vitest, i18n
   (default `de`); `core/` (API client, interceptors, guards); `features/` CRUD
@@ -327,3 +329,5 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-25 | audit follow-ups: postbox retry, failure logging, Jinja autoescape, update drift-guard, runtime API_BASE, README status | `38f0935`, `4ac0d73` |
 | 2026-06-26 | M7.3b: FK reference fields (b-i) + edit/PATCH for all entities (b-ii) | `b2cf26e`, `f9542db` |
 | 2026-06-26 | M7.6: skill authoring (SKILL.md body) + textarea field; fix skills form | `12804ff` |
+| 2026-06-26 | chore: ignore SQLite WAL/SHM checkpointer sidecars | `0138260` |
+| 2026-06-26 | M7.7: in-house i18n (service + `t` pipe + `de` map); key all UI chrome/errors, then entity config labels + run-fallback goal — completes M7 | `943df97`, `d3ac6fe` |
