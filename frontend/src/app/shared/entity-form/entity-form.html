@@ -29,6 +29,20 @@
             </mat-select>
           </mat-form-field>
         }
+        @case ('reference') {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label }}</mat-label>
+            <mat-select
+              [name]="field.key"
+              [(ngModel)]="model[field.key]"
+              [required]="field.required ?? false"
+            >
+              @for (opt of options()[field.key] ?? []; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
         @default {
           <mat-form-field appearance="outline">
             <mat-label>{{ field.label }}</mat-label>

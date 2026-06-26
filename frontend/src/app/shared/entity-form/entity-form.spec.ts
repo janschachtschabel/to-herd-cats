@@ -58,4 +58,31 @@ describe('EntityForm', () => {
     expect(created).toEqual([]);
     expect(fixture.componentInstance.error()).toContain('Pflichtfeld');
   });
+
+  it('loads reference-field options from the related collection', () => {
+    const api = {
+      create: () => of({}),
+      list: () => of([{ id: 's1', name: 'GitHub MCP' }]),
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityForm],
+      providers: [{ provide: CrudApi, useValue: api }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(EntityForm);
+    fixture.componentRef.setInput('title', 'Werkzeuge');
+    fixture.componentRef.setInput('path', 'tools');
+    fixture.componentRef.setInput('fields', [
+      {
+        key: 'mcp_server_id',
+        label: 'MCP-Server',
+        type: 'reference',
+        refPath: 'mcp-servers',
+        refLabel: 'name',
+      },
+    ]);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.options()['mcp_server_id']).toEqual([
+      { value: 's1', label: 'GitHub MCP' },
+    ]);
+  });
 });

@@ -10,9 +10,11 @@ export interface SelectOption {
 export interface FormField {
   key: string;
   label: string;
-  type: 'text' | 'checkbox' | 'select';
+  type: 'text' | 'checkbox' | 'select' | 'reference';
   required?: boolean;
   options?: SelectOption[];
+  refPath?: string; // reference: the collection to load options from
+  refLabel?: string; // reference: the field on each row to show as its label
   default?: string | boolean;
 }
 
@@ -75,6 +77,25 @@ export const ENTITIES: EntityConfig[] = [
     columns: [
       { key: 'name', label: 'Name' },
       { key: 'enabled', label: 'Aktiv' },
+    ],
+    fields: [
+      { key: 'name', label: 'Name', type: 'text', required: true },
+      {
+        key: 'type',
+        label: 'Typ',
+        type: 'select',
+        options: opts('mcp', 'http', 'builtin'),
+        default: 'mcp',
+      },
+      {
+        key: 'mcp_server_id',
+        label: 'MCP-Server',
+        type: 'reference',
+        refPath: 'mcp-servers',
+        refLabel: 'name',
+      },
+      { key: 'tool_name', label: 'Tool-Name am Server', type: 'text' },
+      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
     ],
   },
   {
@@ -154,6 +175,25 @@ export const ENTITIES: EntityConfig[] = [
       { key: 'mode', label: 'Modus' },
       { key: 'cron', label: 'Cron' },
       { key: 'enabled', label: 'Aktiv' },
+    ],
+    fields: [
+      {
+        key: 'agent_id',
+        label: 'Agent',
+        type: 'reference',
+        refPath: 'agents',
+        refLabel: 'name',
+        required: true,
+      },
+      {
+        key: 'mode',
+        label: 'Modus',
+        type: 'select',
+        options: opts('on_demand', 'scheduled', 'event', 'autonomous'),
+        required: true,
+      },
+      { key: 'cron', label: 'Cron (für scheduled)', type: 'text' },
+      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
     ],
   },
   {

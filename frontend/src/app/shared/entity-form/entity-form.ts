@@ -8,13 +8,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 
 import { CrudApi } from '../../core/crud-api';
-import { FormField } from '../../features/entities';
+import { FormField, SelectOption } from '../../features/entities';
 
 /** Config-driven create form for a backend collection.
 
-    Renders the entity's ``fields`` and POSTs the assembled payload, then returns
-    to the list. Edit (PATCH + pre-fill) and richer field types (foreign-key
-    reference, the MCP config_schema) are M7.3b. */
+    Renders the entity's ``fields`` (text / checkbox / select, plus reference
+    fields whose options are loaded from a related collection) and POSTs the
+    assembled payload, then returns to the list. Edit (PATCH + pre-fill) and the
+    MCP config_schema form are the remaining M7.3b pieces. */
 @Component({
   selector: 'app-entity-form',
   imports: [
@@ -38,14 +39,37 @@ export class EntityForm implements OnInit {
   readonly fields = input.required<FormField[]>();
 
   readonly error = signal<string | null>(null);
+  // Options for reference fields, loaded from their related collection. Partial:
+  // a field's options are absent until its related collection has loaded.
+  readonly options = signal<Partial<Record<string, SelectOption[]>>>({});
   model: Record<string, string | boolean> = {};
 
   ngOnInit(): void {
     const model: Record<string, string | boolean> = {};
     for (const field of this.fields()) {
       model[field.key] = field.default ?? (field.type === 'checkbox' ? false : '');
+      if (field.type === 'reference') {
+        this.loadOptions(field);
+      }
     }
     this.model = model;
+  }
+
+  private loadOptions(field: FormField): void {
+    if (!field.refPath || !field.refLabel) {
+      return;
+    }
+    const refLabel = field.refLabel;
+    this.api.list<Record<string, unknown>>(field.refPath).subscribe({
+      next: (rows) => {
+        const opts = rows.map((row) => ({
+          value: String(row['id']),
+          label: String(row[refLabel]),
+        }));
+        this.options.update((current) => ({ ...current, [field.key]: opts }));
+      },
+      error: () => this.error.set('Auswahllisten konnten nicht geladen werden.'),
+    });
   }
 
   save(): void {
