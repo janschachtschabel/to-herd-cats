@@ -209,10 +209,15 @@
   resolves its realm roles to permissions; `get_principal` prefers a verified
   token over the dev stub (invalid → 401, never downgraded to admin). Off until
   `oidc_issuer` + `oidc_jwks_uri` are set. Dep: PyJWT[crypto].
-  Remaining: **M8.3b** Keycloak infra (compose + realm/client) and frontend OIDC
-  login (acquire/attach the bearer token, replace the dev-roles input) — needs a
-  running Keycloak, so not verifiable here; **M8.3c** resource ownership (owner
-  column + subject now that the token carries a stable `sub`).
+  ✅ **M8.3b — Keycloak infra + frontend OIDC login.** `infra/keycloak/`
+  (compose + a `cockpit` realm: public PKCE client, audience mapper, example
+  roles, demo user). The Angular app reads `window.__OIDC__`; when set it logs
+  in via `angular-auth-oidc-client` (auth-code + PKCE), attaches the bearer
+  token to API calls, and shows Anmelden/Abmelden — otherwise the dev stub
+  applies. Build- and unit-tested; the redirect/login flow itself is verified
+  manually against a running Keycloak (`infra/keycloak/README.md`).
+  Remaining: **M8.3c** resource ownership (owner column + subject now that the
+  token carries a stable `sub`).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
   ownership; backend dependency guards + frontend route guards; permissions like
@@ -363,3 +368,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.2a: guard all write routers (30 endpoints) with `<resource>.<action>` permissions + route-coverage invariant test | `41f8568` |
 | 2026-06-26 | M8.2b: `GET /me` + frontend AuthService/interceptor/initializer, then `requirePermission` route guards + permission-gated UI (dev-roles switcher) | `92877e5`, `2483236`, `61a7b19` |
 | 2026-06-26 | M8.3a: OIDC (Keycloak) bearer-token verification (RS256/JWKS, iss/aud/exp); token principal preferred over the dev stub; PyJWT[crypto] | `b8ef6cb` |
+| 2026-06-26 | M8.3b: Keycloak infra (compose + cockpit realm) + frontend OIDC login (angular-auth-oidc-client, bearer token, login/logout) | `f8f3cc2`, `8e500e1` |
