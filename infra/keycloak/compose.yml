@@ -1,0 +1,22 @@
+# Local Keycloak for the cockpit's OIDC auth (M8.3b). DEV ONLY: runs in
+# `start-dev` (no production hardening, ephemeral H2 database) and imports the
+# bundled `cockpit` realm on startup. Do not use these settings in production —
+# the prod stack (persistent DB, TLS, hardened Keycloak) is M9.
+#
+#   docker compose -f infra/keycloak/compose.yml up
+#
+# Keycloak then serves the realm at http://localhost:8080/realms/cockpit and the
+# admin console at http://localhost:8080/admin (admin / admin). See README.md.
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    command: ['start-dev', '--import-realm']
+    environment:
+      # Keycloak 26 bootstrap admin (replaces the old KEYCLOAK_ADMIN vars).
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: 'true'
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/cockpit-realm.json:ro

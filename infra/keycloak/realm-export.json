@@ -1,0 +1,53 @@
+{
+  "realm": "cockpit",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Cockpit administrator (map to all permissions in the app)" },
+      { "name": "editor", "description": "Configures and runs agents (map to the relevant permissions)" },
+      { "name": "viewer", "description": "Read-only (no write permissions in the app)" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "cockpit-frontend",
+      "name": "Cockpit frontend (Angular SPA)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:4200/*"],
+      "webOrigins": ["http://localhost:4200"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4200/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "cockpit-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "cockpit",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Demo",
+      "lastName": "User",
+      "email": "demo@example.com",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "realmRoles": ["editor"]
+    }
+  ]
+}

@@ -66,7 +66,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the full brief, domain model and hard rules.
 ```
 backend/    # FastAPI control API, services, repositories, LangGraph runtime
 frontend/   # Angular 21 cockpit UI + embeddable Web Components
-infra/      # docker-compose + packaging — planned (M9)
+infra/      # keycloak/ (local OIDC, M8.3); full prod compose + packaging — M9
 ```
 
 ## Development
