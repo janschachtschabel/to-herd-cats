@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.agents import router as agents_router
+from app.api.auth import router as auth_router
 from app.api.channels import router as channels_router
 from app.api.data_sources import router as data_sources_router
 from app.api.events import router as events_router
@@ -68,6 +69,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(health_router)
+    app.include_router(auth_router)
     app.include_router(agents_router)
     app.include_router(llm_connections_router)
     app.include_router(skills_router)

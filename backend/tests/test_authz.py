@@ -116,6 +116,18 @@ async def test_run_create_requires_its_own_permission(client):
     assert denied.status_code == 403
 
 
+async def test_me_reports_admin_without_credentials(client):
+    body = (await client.get("/me")).json()
+    assert body["subject"] == "dev-admin"
+    assert body["permissions"] == ["*"]
+
+
+async def test_me_reflects_dev_roles_header(client):
+    await client.post("/roles", json={"name": "ed", "permissions": ["agent.create", "tool.create"]})
+    body = (await client.get("/me", headers={"X-Dev-Roles": "ed"})).json()
+    assert set(body["permissions"]) == {"agent.create", "tool.create"}
+
+
 def test_every_write_route_is_permission_guarded():
     """Every mutating route must carry a require_permission guard.
 
