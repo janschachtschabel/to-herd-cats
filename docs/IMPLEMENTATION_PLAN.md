@@ -204,10 +204,15 @@
   (respond) hide actions the principal lacks. A `devRoles` interceptor sends
   `X-Dev-Roles` (set via a toolbar input) so a developer can act as specific
   roles before Keycloak.
-  Remaining: **resource ownership** (owner column + subject) — deferred to
-  **M8.3**, since the dev stub has no stable per-user subject; **M8.3** real
-  Keycloak/OIDC (replace `get_principal` and the `X-Dev-Roles` stub with the
-  token's subject/roles).
+  ✅ **M8.3a — OIDC (Keycloak) token verification.** `core/oidc.py` verifies a
+  Bearer access token (RS256 via JWKS, iss/aud/exp, algorithm pinned) and
+  resolves its realm roles to permissions; `get_principal` prefers a verified
+  token over the dev stub (invalid → 401, never downgraded to admin). Off until
+  `oidc_issuer` + `oidc_jwks_uri` are set. Dep: PyJWT[crypto].
+  Remaining: **M8.3b** Keycloak infra (compose + realm/client) and frontend OIDC
+  login (acquire/attach the bearer token, replace the dev-roles input) — needs a
+  running Keycloak, so not verifiable here; **M8.3c** resource ownership (owner
+  column + subject now that the token carries a stable `sub`).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
   ownership; backend dependency guards + frontend route guards; permissions like
@@ -357,3 +362,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.1: RBAC permission model + `require_permission` guards (agents writes, inbox respond) on a dev-stub identity (`auth_dev_mode`) | `3b12fc9` |
 | 2026-06-26 | M8.2a: guard all write routers (30 endpoints) with `<resource>.<action>` permissions + route-coverage invariant test | `41f8568` |
 | 2026-06-26 | M8.2b: `GET /me` + frontend AuthService/interceptor/initializer, then `requirePermission` route guards + permission-gated UI (dev-roles switcher) | `92877e5`, `2483236`, `61a7b19` |
+| 2026-06-26 | M8.3a: OIDC (Keycloak) bearer-token verification (RS256/JWKS, iss/aud/exp); token principal preferred over the dev stub; PyJWT[crypto] | `b8ef6cb` |
