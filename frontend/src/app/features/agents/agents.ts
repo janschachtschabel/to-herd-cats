@@ -7,6 +7,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 
+import { AuthService } from '../../core/auth.service';
 import { I18n } from '../../core/i18n';
 import { TranslatePipe } from '../../core/translate.pipe';
 import { Agent } from './agent';
@@ -34,6 +35,7 @@ export class Agents {
   private readonly api = inject(AgentsApi);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18n);
+  protected readonly auth = inject(AuthService);
 
   readonly agents = signal<Agent[]>([]);
   readonly loading = signal(true);

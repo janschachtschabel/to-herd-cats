@@ -1,17 +1,19 @@
 <section class="agents">
   <h2>{{ 'agents.heading' | t }}</h2>
 
-  <form class="agent-form" (ngSubmit)="create()">
-    <mat-form-field appearance="outline">
-      <mat-label>{{ 'agents.name' | t }}</mat-label>
-      <input matInput name="name" [(ngModel)]="name" required />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>{{ 'agents.goal' | t }}</mat-label>
-      <input matInput name="goal" [(ngModel)]="goal" />
-    </mat-form-field>
-    <button mat-flat-button type="submit">{{ 'agents.create' | t }}</button>
-  </form>
+  @if (auth.has('agent.create')) {
+    <form class="agent-form" (ngSubmit)="create()">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'agents.name' | t }}</mat-label>
+        <input matInput name="name" [(ngModel)]="name" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'agents.goal' | t }}</mat-label>
+        <input matInput name="goal" [(ngModel)]="goal" />
+      </mat-form-field>
+      <button mat-flat-button type="submit">{{ 'agents.create' | t }}</button>
+    </form>
+  }
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -32,7 +34,9 @@
               · {{ agent.goal }}
             }
           </span>
-          <button matListItemMeta mat-button (click)="run(agent)">{{ 'agents.run' | t }}</button>
+          @if (auth.has('run.create')) {
+            <button matListItemMeta mat-button (click)="run(agent)">{{ 'agents.run' | t }}</button>
+          }
         </mat-list-item>
       }
     </mat-list>

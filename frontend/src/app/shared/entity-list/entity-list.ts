@@ -13,6 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 
+import { AuthService } from '../../core/auth.service';
 import { CrudApi } from '../../core/crud-api';
 import { I18n } from '../../core/i18n';
 import { TranslatePipe } from '../../core/translate.pipe';
@@ -48,9 +49,12 @@ interface Row {
 export class EntityList implements OnInit {
   private readonly api = inject(CrudApi);
   private readonly i18n = inject(I18n);
+  protected readonly auth = inject(AuthService);
 
   readonly title = input.required<string>();
   readonly path = input.required<string>();
+  // Permission resource prefix (e.g. "tool"); empty when unset (gates open).
+  readonly resource = input('');
   readonly columns = input.required<Column[]>();
   readonly creatable = input(false);
 

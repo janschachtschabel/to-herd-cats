@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { requirePermission } from './core/permission.guard';
 import { Agents } from './features/agents/agents';
 import { ENTITIES } from './features/entities';
 import { Inbox } from './features/inbox/inbox';
@@ -21,6 +22,7 @@ export const routes: Routes = [
       data: {
         title: entity.title,
         path: entity.path,
+        resource: entity.resource,
         columns: entity.columns,
         creatable: !!entity.fields,
       },
@@ -31,8 +33,18 @@ export const routes: Routes = [
     const formData = { title: entity.title, path: entity.path, fields: entity.fields };
     return [
       list,
-      { path: `${entity.path}/new`, component: EntityForm, data: formData },
-      { path: `${entity.path}/:id/edit`, component: EntityForm, data: formData },
+      {
+        path: `${entity.path}/new`,
+        component: EntityForm,
+        data: formData,
+        canActivate: [requirePermission(`${entity.resource}.create`)],
+      },
+      {
+        path: `${entity.path}/:id/edit`,
+        component: EntityForm,
+        data: formData,
+        canActivate: [requirePermission(`${entity.resource}.update`)],
+      },
     ];
   }),
 ];

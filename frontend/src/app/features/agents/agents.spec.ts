@@ -3,6 +3,7 @@ import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 
+import { AuthService } from '../../core/auth.service';
 import { I18n } from '../../core/i18n';
 import { Agent } from './agent';
 import { Agents } from './agents';
@@ -17,7 +18,11 @@ function setup(agents: Agent[], extra: Partial<AgentsApi> = {}) {
   };
   TestBed.configureTestingModule({
     imports: [Agents],
-    providers: [{ provide: AgentsApi, useValue: api }, provideRouter([])],
+    providers: [
+      { provide: AgentsApi, useValue: api },
+      { provide: AuthService, useValue: { has: () => true } as unknown as AuthService },
+      provideRouter([]),
+    ],
   });
   const fixture = TestBed.createComponent(Agents);
   fixture.detectChanges();

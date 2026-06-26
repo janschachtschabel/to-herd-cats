@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
+import { AuthService } from '../../core/auth.service';
 import { I18n } from '../../core/i18n';
 import { TranslatePipe } from '../../core/translate.pipe';
 import { InboxApi } from './inbox-api';
@@ -30,6 +31,7 @@ import { InboxItem } from './inbox-item';
 export class Inbox implements OnInit {
   private readonly api = inject(InboxApi);
   private readonly i18n = inject(I18n);
+  protected readonly auth = inject(AuthService);
 
   readonly items = signal<InboxItem[]>([]);
   readonly loading = signal(true);

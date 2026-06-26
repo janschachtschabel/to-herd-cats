@@ -1,5 +1,12 @@
 <mat-toolbar>
   <span>{{ 'app.title' | t }}</span>
+  <input
+    class="dev-roles"
+    [value]="auth.devRoles()"
+    (change)="setDevRoles($event)"
+    [attr.placeholder]="'app.devRoles' | t"
+    [attr.aria-label]="'app.devRoles' | t"
+  />
 </mat-toolbar>
 <mat-sidenav-container class="app-shell">
   <mat-sidenav mode="side" opened>

@@ -19,7 +19,7 @@
         <mat-card-content>
           <pre class="payload">{{ description(item) }}</pre>
 
-          @if (item.status === 'pending') {
+          @if (item.status === 'pending' && auth.has('run.approve')) {
             <mat-form-field appearance="outline" class="content">
               <mat-label>{{ 'inbox.reply' | t }}</mat-label>
               <textarea matInput rows="3" [(ngModel)]="contents[item.id]"></textarea>
@@ -29,7 +29,7 @@
           }
         </mat-card-content>
 
-        @if (item.status === 'pending') {
+        @if (item.status === 'pending' && auth.has('run.approve')) {
           <mat-card-actions>
             @for (action of item.allowed_responses; track action) {
               <button mat-button (click)="respond(item, action)">{{ action }}</button>

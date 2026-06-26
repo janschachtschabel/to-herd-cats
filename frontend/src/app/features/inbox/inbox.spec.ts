@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
+import { AuthService } from '../../core/auth.service';
 import { Inbox } from './inbox';
 import { InboxApi } from './inbox-api';
 import { InboxItem } from './inbox-item';
@@ -24,7 +25,10 @@ function setup(
   const api = { list: () => of(items), respond: respondImpl } as unknown as InboxApi;
   TestBed.configureTestingModule({
     imports: [Inbox],
-    providers: [{ provide: InboxApi, useValue: api }],
+    providers: [
+      { provide: InboxApi, useValue: api },
+      { provide: AuthService, useValue: { has: () => true } as unknown as AuthService },
+    ],
   });
   const fixture = TestBed.createComponent(Inbox);
   fixture.detectChanges();

@@ -30,9 +30,14 @@ export interface FormField {
     every column/field ``label`` are i18n keys (see core/messages.de.ts). The
     bespoke key-value Setting is excluded (its own view later); the MCP
     config_schema dynamic form is a follow-up (the backend has no config-value
-    field for it). */
+    field for it).
+
+    ``resource`` is the backend permission prefix for this collection (e.g.
+    ``tool`` → ``tool.create`` / ``tool.update`` / ``tool.delete``); the list
+    and form gate their actions on it. */
 export interface EntityConfig {
   path: string;
+  resource: string;
   title: string;
   columns: Column[];
   fields?: FormField[];
@@ -45,6 +50,7 @@ function opts(...values: string[]): SelectOption[] {
 export const ENTITIES: EntityConfig[] = [
   {
     path: 'llm-connections',
+    resource: 'llm_connection',
     title: 'title.llmConnections',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -59,6 +65,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'mcp-servers',
+    resource: 'mcp_server',
     title: 'title.mcpServers',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -79,6 +86,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'tools',
+    resource: 'tool',
     title: 'title.tools',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -106,6 +114,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'data-sources',
+    resource: 'data_source',
     title: 'title.dataSources',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -125,6 +134,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'templates',
+    resource: 'template',
     title: 'title.templates',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -149,6 +159,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'channels',
+    resource: 'channel',
     title: 'title.channels',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -176,6 +187,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'triggers',
+    resource: 'trigger',
     title: 'title.triggers',
     columns: [
       { key: 'mode', label: 'label.mode' },
@@ -204,6 +216,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'skills',
+    resource: 'skill',
     title: 'title.skills',
     columns: [
       { key: 'name', label: 'label.name' },
@@ -230,6 +243,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'roles',
+    resource: 'role',
     title: 'title.roles',
     columns: [
       { key: 'name', label: 'label.name' },
