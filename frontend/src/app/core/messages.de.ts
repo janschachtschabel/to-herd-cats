@@ -20,6 +20,8 @@ export const MESSAGES_DE: Record<string, string> = {
   'agents.loadError': 'Agenten konnten nicht geladen werden.',
   'agents.createError': 'Agent konnte nicht erstellt werden.',
   'agents.runError': 'Run konnte nicht gestartet werden.',
+  // Sent as the run goal when an agent has none set.
+  'agents.defaultGoal': 'Führe deine konfigurierte Aufgabe aus.',
 
   // Postbox (inbox)
   'inbox.heading': 'Postbox',
@@ -55,4 +57,39 @@ export const MESSAGES_DE: Record<string, string> = {
   'form.saveError': 'Speichern fehlgeschlagen.',
   'form.optionsError': 'Auswahllisten konnten nicht geladen werden.',
   'form.loadError': 'Eintrag konnte nicht geladen werden.',
+
+  // Entity titles (features/entities.ts)
+  'title.llmConnections': 'LLM-Verbindungen',
+  'title.mcpServers': 'MCP-Server',
+  'title.tools': 'Werkzeuge',
+  'title.dataSources': 'Datenquellen',
+  'title.templates': 'Vorlagen',
+  'title.channels': 'Kanäle',
+  'title.triggers': 'Trigger',
+  'title.skills': 'Skills',
+  'title.roles': 'Rollen',
+
+  // Entity column / field labels (features/entities.ts). Shared where the
+  // concept is the same; a distinct key wherever the label diverges by context.
+  'label.name': 'Name',
+  'label.model': 'Modell',
+  'label.apiBase': 'API-Basis-URL',
+  'label.active': 'Aktiv',
+  'label.transport': 'Transport',
+  'label.command': 'Kommando',
+  'label.url': 'URL',
+  'label.type': 'Typ',
+  'label.mcpServer': 'MCP-Server',
+  'label.toolName': 'Tool-Name am Server',
+  'label.kind': 'Art',
+  'label.format': 'Format',
+  'label.direction': 'Richtung',
+  'label.mode': 'Modus',
+  'label.cron': 'Cron',
+  'label.cronScheduled': 'Cron (für scheduled)',
+  'label.agent': 'Agent',
+  'label.invocation': 'Aufruf',
+  'label.description': 'Beschreibung',
+  'label.skillDescription': 'Beschreibung (Trigger für progressive disclosure)',
+  'label.instructions': 'Anweisungen (SKILL.md-Inhalt)',
 };

@@ -3,6 +3,7 @@ import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 
+import { I18n } from '../../core/i18n';
 import { Agent } from './agent';
 import { Agents } from './agents';
 import { AgentsApi } from './agents-api';
@@ -56,5 +57,25 @@ describe('Agents', () => {
     });
     expect(calls).toEqual([['a1', 'do x']]);
     expect(navigate).toHaveBeenCalledWith('/runs');
+  });
+
+  it('falls back to the configured default goal when the agent has none', () => {
+    const calls: Array<[string, string]> = [];
+    const fixture = setup([], {
+      runAgent: (id: string, goal: string) => {
+        calls.push([id, goal]);
+        return of({});
+      },
+    });
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const defaultGoal = TestBed.inject(I18n).t('agents.defaultGoal');
+    fixture.componentInstance.run({
+      id: 'a2',
+      name: 'R',
+      status: 'active',
+      goal: '',
+      created_at: '',
+    });
+    expect(calls).toEqual([['a2', defaultGoal]]);
   });
 });

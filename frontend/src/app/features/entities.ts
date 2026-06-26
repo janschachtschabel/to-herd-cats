@@ -6,7 +6,11 @@ export interface SelectOption {
 }
 
 /** A create-form field (a small UI schema). Required fields are validated on
-    the client and again by the backend on submit. */
+    the client and again by the backend on submit.
+
+    ``label`` is an i18n key (resolved via the ``t`` pipe / I18n service against
+    core/messages.de.ts), not display text. ``options`` hold backend enum tokens
+    shown verbatim, so their labels are literal, not keys. */
 export interface FormField {
   key: string;
   label: string;
@@ -22,9 +26,11 @@ export interface FormField {
     when ``fields`` is set, a config-driven create/edit form (reference fields
     load their options from a related collection).
 
-    ``path`` is both the route path and the REST collection path. The bespoke
-    key-value Setting is excluded (its own view later); the MCP config_schema
-    dynamic form is a follow-up (the backend has no config-value field for it). */
+    ``path`` is both the route path and the REST collection path. ``title`` and
+    every column/field ``label`` are i18n keys (see core/messages.de.ts). The
+    bespoke key-value Setting is excluded (its own view later); the MCP
+    config_schema dynamic form is a follow-up (the backend has no config-value
+    field for it). */
 export interface EntityConfig {
   path: string;
   title: string;
@@ -39,103 +45,103 @@ function opts(...values: string[]): SelectOption[] {
 export const ENTITIES: EntityConfig[] = [
   {
     path: 'llm-connections',
-    title: 'LLM-Verbindungen',
+    title: 'title.llmConnections',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'provider_model', label: 'Modell' },
+      { key: 'name', label: 'label.name' },
+      { key: 'provider_model', label: 'label.model' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
-      { key: 'provider_model', label: 'Modell', type: 'text', required: true },
-      { key: 'api_base', label: 'API-Basis-URL', type: 'text' },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
+      { key: 'provider_model', label: 'label.model', type: 'text', required: true },
+      { key: 'api_base', label: 'label.apiBase', type: 'text' },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'mcp-servers',
-    title: 'MCP-Server',
+    title: 'title.mcpServers',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'transport', label: 'Transport' },
+      { key: 'name', label: 'label.name' },
+      { key: 'transport', label: 'label.transport' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'transport',
-        label: 'Transport',
+        label: 'label.transport',
         type: 'select',
         required: true,
         options: opts('stdio', 'streamable_http'),
       },
-      { key: 'command', label: 'Kommando', type: 'text' },
-      { key: 'url', label: 'URL', type: 'text' },
+      { key: 'command', label: 'label.command', type: 'text' },
+      { key: 'url', label: 'label.url', type: 'text' },
     ],
   },
   {
     path: 'tools',
-    title: 'Werkzeuge',
+    title: 'title.tools',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'enabled', label: 'Aktiv' },
+      { key: 'name', label: 'label.name' },
+      { key: 'enabled', label: 'label.active' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'type',
-        label: 'Typ',
+        label: 'label.type',
         type: 'select',
         options: opts('mcp', 'http', 'builtin'),
         default: 'mcp',
       },
       {
         key: 'mcp_server_id',
-        label: 'MCP-Server',
+        label: 'label.mcpServer',
         type: 'reference',
         refPath: 'mcp-servers',
         refLabel: 'name',
       },
-      { key: 'tool_name', label: 'Tool-Name am Server', type: 'text' },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'tool_name', label: 'label.toolName', type: 'text' },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'data-sources',
-    title: 'Datenquellen',
+    title: 'title.dataSources',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'kind', label: 'Art' },
+      { key: 'name', label: 'label.name' },
+      { key: 'kind', label: 'label.kind' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'kind',
-        label: 'Art',
+        label: 'label.kind',
         type: 'select',
         required: true,
         options: opts('vector', 'graph', 'relational', 'document', 'wiki'),
       },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'templates',
-    title: 'Vorlagen',
+    title: 'title.templates',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'format', label: 'Format' },
+      { key: 'name', label: 'label.name' },
+      { key: 'format', label: 'label.format' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'kind',
-        label: 'Art',
+        label: 'label.kind',
         type: 'select',
         required: true,
         options: opts('report', 'research', 'comparison'),
       },
       {
         key: 'format',
-        label: 'Format',
+        label: 'label.format',
         type: 'select',
         options: opts('markdown', 'html', 'pdf', 'docx'),
       },
@@ -143,43 +149,43 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     path: 'channels',
-    title: 'Kanäle',
+    title: 'title.channels',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'kind', label: 'Art' },
-      { key: 'direction', label: 'Richtung' },
+      { key: 'name', label: 'label.name' },
+      { key: 'kind', label: 'label.kind' },
+      { key: 'direction', label: 'label.direction' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'kind',
-        label: 'Art',
+        label: 'label.kind',
         type: 'select',
         required: true,
         options: opts('slack', 'email', 'matrix', 'webhook'),
       },
       {
         key: 'direction',
-        label: 'Richtung',
+        label: 'label.direction',
         type: 'select',
         options: opts('in', 'out', 'both'),
         default: 'out',
       },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'triggers',
-    title: 'Trigger',
+    title: 'title.triggers',
     columns: [
-      { key: 'mode', label: 'Modus' },
-      { key: 'cron', label: 'Cron' },
-      { key: 'enabled', label: 'Aktiv' },
+      { key: 'mode', label: 'label.mode' },
+      { key: 'cron', label: 'label.cron' },
+      { key: 'enabled', label: 'label.active' },
     ],
     fields: [
       {
         key: 'agent_id',
-        label: 'Agent',
+        label: 'label.agent',
         type: 'reference',
         refPath: 'agents',
         refLabel: 'name',
@@ -187,51 +193,51 @@ export const ENTITIES: EntityConfig[] = [
       },
       {
         key: 'mode',
-        label: 'Modus',
+        label: 'label.mode',
         type: 'select',
         options: opts('on_demand', 'scheduled', 'event', 'autonomous'),
         required: true,
       },
-      { key: 'cron', label: 'Cron (für scheduled)', type: 'text' },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'cron', label: 'label.cronScheduled', type: 'text' },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'skills',
-    title: 'Skills',
+    title: 'title.skills',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'invocation', label: 'Aufruf' },
+      { key: 'name', label: 'label.name' },
+      { key: 'invocation', label: 'label.invocation' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
       {
         key: 'description',
-        label: 'Beschreibung (Trigger für progressive disclosure)',
+        label: 'label.skillDescription',
         type: 'text',
         required: true,
       },
-      { key: 'instructions', label: 'Anweisungen (SKILL.md-Inhalt)', type: 'textarea' },
+      { key: 'instructions', label: 'label.instructions', type: 'textarea' },
       {
         key: 'invocation',
-        label: 'Aufruf',
+        label: 'label.invocation',
         type: 'select',
         options: opts('model_invoked', 'command', 'both'),
         default: 'model_invoked',
       },
-      { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
+      { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
   {
     path: 'roles',
-    title: 'Rollen',
+    title: 'title.roles',
     columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'description', label: 'Beschreibung' },
+      { key: 'name', label: 'label.name' },
+      { key: 'description', label: 'label.description' },
     ],
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true },
-      { key: 'description', label: 'Beschreibung', type: 'text' },
+      { key: 'name', label: 'label.name', type: 'text', required: true },
+      { key: 'description', label: 'label.description', type: 'text' },
     ],
   },
 ];

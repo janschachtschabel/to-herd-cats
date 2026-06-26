@@ -12,8 +12,6 @@ import { TranslatePipe } from '../../core/translate.pipe';
 import { Agent } from './agent';
 import { AgentsApi } from './agents-api';
 
-const DEFAULT_GOAL = 'Führe deine konfigurierte Aufgabe aus.';
-
 /** Lists the agents from the backend, creates new ones, and starts a run.
 
     Zoneless change detection is driven by signal writes, so the API results are
@@ -80,7 +78,7 @@ export class Agents {
 
   run(agent: Agent): void {
     this.error.set(null);
-    this.api.runAgent(agent.id, agent.goal?.trim() || DEFAULT_GOAL).subscribe({
+    this.api.runAgent(agent.id, agent.goal?.trim() || this.i18n.t('agents.defaultGoal')).subscribe({
       next: () => this.router.navigateByUrl('/runs'),
       error: () => this.error.set(this.i18n.t('agents.runError')),
     });
