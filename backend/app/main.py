@@ -25,6 +25,7 @@ from app.api.tools import router as tools_router
 from app.api.triggers import router as triggers_router
 from app.core.db import make_engine, make_session_factory
 from app.core.oidc import build_verifier
+from app.core.seed import seed_default_roles
 from app.core.settings import Settings, get_settings
 from app.runtime.checkpointer import open_app_checkpointer
 from app.runtime.graph import set_checkpointer
@@ -38,6 +39,8 @@ async def lifespan(app: FastAPI):
     engine = make_engine(settings.database_url)
     app.state.engine = engine
     app.state.session_factory = make_session_factory(engine)
+    async with app.state.session_factory() as session:
+        await seed_default_roles(session)
     checkpointer = await open_app_checkpointer(settings)
     if checkpointer is not None:
         set_checkpointer(checkpointer[0])
