@@ -19,12 +19,12 @@ export interface FormField {
 }
 
 /** A backend collection shown as a generic list shell (list + delete) and,
-    when ``fields`` is set, a config-driven create form.
+    when ``fields`` is set, a config-driven create/edit form (reference fields
+    load their options from a related collection).
 
-    ``path`` is both the route path and the REST collection path. Entities with a
-    required foreign key (tools, triggers) and the bespoke key-value Setting are
-    excluded for now; their create forms (and the MCP config_schema form) are
-    M7.3b. */
+    ``path`` is both the route path and the REST collection path. The bespoke
+    key-value Setting is excluded (its own view later); the MCP config_schema
+    dynamic form is a follow-up (the backend has no config-value field for it). */
 export interface EntityConfig {
   path: string;
   title: string;
