@@ -1,5 +1,7 @@
 # to-herd-cats
 
+[![CI](https://github.com/janschachtschabel/to-herd-cats/actions/workflows/ci.yml/badge.svg)](https://github.com/janschachtschabel/to-herd-cats/actions/workflows/ci.yml)
+
 > A vendor-neutral, open-source **control plane ("cockpit") for AI agents** —
 > create, configure, run and monitor agents the way you'd manage staff.
 

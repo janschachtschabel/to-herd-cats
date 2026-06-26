@@ -240,9 +240,11 @@
 
 ## Cross-cutting concerns (span milestones)
 
-- **CI pipeline.** GitHub Actions on push/PR: `ruff check` + `ruff format
-  --check` + `uv run pytest` for the backend, and `ng test` + `ng build` once the
-  frontend exists. Set up early so "green by default" holds; gate merges on it.
+- **CI pipeline.** ✅ `.github/workflows/ci.yml` runs on push to `main` and on
+  PRs: a backend job (`uv sync --frozen`, `ruff check`, `ruff format --check`,
+  `pytest`, `alembic upgrade` + `check`) and a frontend job (`npm ci`, `prettier
+  --check`, `ng build`, `ng test`), parallel, least-privilege token, cancel
+  superseded runs. Green on real GitHub Actions (run 28263574129).
 - **API error model.** One consistent error shape; map domain errors and
   `IntegrityError` (e.g. a bad foreign key) to a clean 4xx, never a 500 with a
   stack trace (CLAUDE.md §11). Subsumes the bad-FK follow-up below.
@@ -378,3 +380,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.3b: Keycloak infra (compose + cockpit realm) + frontend OIDC login (angular-auth-oidc-client, bearer token, login/logout) | `f8f3cc2`, `8e500e1` |
 | 2026-06-26 | M8 bootstrap: seed an `admin` role (`*`) on startup when roles are empty — closes the first-role chicken-and-egg (found verifying M8.3b vs real Keycloak) | `09899c9` |
 | 2026-06-26 | M8.3c: agent ownership (`created_by`; owner-or-permission update/delete) + migration — completes M8 | `6ee75e2` |
+| 2026-06-26 | CI: GitHub Actions (backend ruff/pytest/alembic + frontend prettier/build/vitest); green on real Actions | `9587d08`, `c3603e2` |
