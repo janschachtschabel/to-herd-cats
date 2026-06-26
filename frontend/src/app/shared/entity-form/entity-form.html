@@ -1,5 +1,5 @@
 <section class="entity-form">
-  <h2>{{ title() }} – neu</h2>
+  <h2>{{ title() }} – {{ id() ? 'bearbeiten' : 'neu' }}</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>

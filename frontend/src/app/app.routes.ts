@@ -28,13 +28,11 @@ export const routes: Routes = [
     if (!entity.fields) {
       return [list];
     }
+    const formData = { title: entity.title, path: entity.path, fields: entity.fields };
     return [
       list,
-      {
-        path: `${entity.path}/new`,
-        component: EntityForm,
-        data: { title: entity.title, path: entity.path, fields: entity.fields },
-      },
+      { path: `${entity.path}/new`, component: EntityForm, data: formData },
+      { path: `${entity.path}/:id/edit`, component: EntityForm, data: formData },
     ];
   }),
 ];

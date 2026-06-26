@@ -85,4 +85,30 @@ describe('EntityForm', () => {
       { value: 's1', label: 'GitHub MCP' },
     ]);
   });
+
+  it('pre-fills from the entity and PATCHes on save in edit mode', () => {
+    const updated: Array<[string, string, unknown]> = [];
+    const api = {
+      get: () => of({ name: 'Existing', enabled: false }),
+      update: (path: string, id: string, payload: unknown) => {
+        updated.push([path, id, payload]);
+        return of({});
+      },
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityForm],
+      providers: [{ provide: CrudApi, useValue: api }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(EntityForm);
+    fixture.componentRef.setInput('title', 'Rollen');
+    fixture.componentRef.setInput('path', 'roles');
+    fixture.componentRef.setInput('fields', FIELDS);
+    fixture.componentRef.setInput('id', 'r1');
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    expect(fixture.componentInstance.model).toEqual({ name: 'Existing', enabled: false });
+    fixture.componentInstance.save();
+    expect(updated).toEqual([['roles', 'r1', { name: 'Existing', enabled: false }]]);
+  });
 });

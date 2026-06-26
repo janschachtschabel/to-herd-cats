@@ -10,12 +10,12 @@ import { Router, RouterLink } from '@angular/router';
 import { CrudApi } from '../../core/crud-api';
 import { FormField, SelectOption } from '../../features/entities';
 
-/** Config-driven create form for a backend collection.
+/** Config-driven create or edit form for a backend collection.
 
     Renders the entity's ``fields`` (text / checkbox / select, plus reference
-    fields whose options are loaded from a related collection) and POSTs the
-    assembled payload, then returns to the list. Edit (PATCH + pre-fill) and the
-    MCP config_schema form are the remaining M7.3b pieces. */
+    fields whose options load from a related collection). With an ``id`` it
+    pre-fills from the existing entity and PATCHes on save; otherwise it POSTs a
+    new one. The MCP config_schema form is the remaining M7.3b piece. */
 @Component({
   selector: 'app-entity-form',
   imports: [
@@ -37,6 +37,8 @@ export class EntityForm implements OnInit {
   readonly title = input.required<string>();
   readonly path = input.required<string>();
   readonly fields = input.required<FormField[]>();
+  // Set in edit mode (bound from the route ":id" param); empty means create.
+  readonly id = input<string>('');
 
   readonly error = signal<string | null>(null);
   // Options for reference fields, loaded from their related collection. Partial:
@@ -53,6 +55,25 @@ export class EntityForm implements OnInit {
       }
     }
     this.model = model;
+    if (this.id()) {
+      this.loadEntity();
+    }
+  }
+
+  private loadEntity(): void {
+    this.api.get<Record<string, unknown>>(this.path(), this.id()).subscribe({
+      next: (entity) => {
+        const model = { ...this.model };
+        for (const field of this.fields()) {
+          const value = entity[field.key];
+          if (value !== null && value !== undefined) {
+            model[field.key] = value as string | boolean;
+          }
+        }
+        this.model = model;
+      },
+      error: () => this.error.set('Eintrag konnte nicht geladen werden.'),
+    });
   }
 
   private loadOptions(field: FormField): void {
@@ -79,7 +100,11 @@ export class EntityForm implements OnInit {
       this.error.set(`Pflichtfeld fehlt: ${missing.label}`);
       return;
     }
-    this.api.create(this.path(), this.buildPayload()).subscribe({
+    const id = this.id();
+    const request = id
+      ? this.api.update(this.path(), id, this.buildPayload())
+      : this.api.create(this.path(), this.buildPayload());
+    request.subscribe({
       next: () => this.router.navigateByUrl('/' + this.path()),
       error: () => this.error.set('Speichern fehlgeschlagen.'),
     });

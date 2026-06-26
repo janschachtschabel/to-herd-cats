@@ -23,4 +23,12 @@ export class CrudApi {
   create<T>(path: string, payload: unknown): Observable<T> {
     return this.http.post<T>(`${API_BASE}/${path}`, payload);
   }
+
+  get<T>(path: string, id: string): Observable<T> {
+    return this.http.get<T>(`${API_BASE}/${path}/${id}`);
+  }
+
+  update<T>(path: string, id: string, payload: unknown): Observable<T> {
+    return this.http.patch<T>(`${API_BASE}/${path}/${id}`, payload);
+  }
 }

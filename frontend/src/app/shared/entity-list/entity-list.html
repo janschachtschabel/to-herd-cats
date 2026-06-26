@@ -25,6 +25,15 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row">
+          @if (creatable()) {
+            <a
+              mat-icon-button
+              [routerLink]="'/' + path() + '/' + row.id + '/edit'"
+              aria-label="Bearbeiten"
+            >
+              <mat-icon>edit</mat-icon>
+            </a>
+          }
           <button mat-icon-button aria-label="Löschen" (click)="delete(row.id)">
             <mat-icon>delete</mat-icon>
           </button>
