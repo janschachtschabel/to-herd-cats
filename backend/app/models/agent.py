@@ -33,3 +33,7 @@ class Agent(UuidAuditMixin, Base):
     memory: Mapped[dict] = mapped_column(JSON, default=dict)
     guardrails: Mapped[dict] = mapped_column(JSON, default=dict)
     status: Mapped[str] = mapped_column(String(16), default="draft")
+
+    # Owner: the principal subject (OIDC sub, or dev-stub subject) that created
+    # the agent. Nullable — pre-ownership rows have none, so they match no owner.
+    created_by: Mapped[str | None] = mapped_column(String(255), default=None)

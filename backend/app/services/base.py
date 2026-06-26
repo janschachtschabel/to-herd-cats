@@ -21,8 +21,13 @@ class CrudService[ModelT: Base]:
         self._session = session
         self._repo = repository
 
-    async def create(self, payload: BaseModel) -> ModelT:
-        entity = self._repo.model(**payload.model_dump(mode="json"))
+    async def create(self, payload: BaseModel, **extra: object) -> ModelT:
+        """Persist a new entity from ``payload``.
+
+        ``extra`` carries server-set fields absent from the client payload (e.g.
+        an owner ``created_by``); they are merged into the new row.
+        """
+        entity = self._repo.model(**payload.model_dump(mode="json"), **extra)
         await self._repo.add(entity)
         await self._session.commit()
         await self._session.refresh(entity)

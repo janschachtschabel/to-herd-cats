@@ -3,13 +3,33 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_agent_service
-from app.api.security import require_permission
+from app.api.security import Principal, get_principal, require_permission
 from app.core.permissions import Permission
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.services.agents import AgentService
 from app.services.base import EntityNotFoundError
 
 router = APIRouter(prefix="/agents", tags=["agents"])
+
+
+def require_agent_access(permission: str):
+    """Authorize an agent mutation: allowed if the principal holds ``permission``
+    or owns the agent (``created_by`` == subject). 404 if the agent is gone."""
+
+    async def guard(
+        agent_id: str,
+        principal: Principal = Depends(get_principal),
+        service: AgentService = Depends(get_agent_service),
+    ) -> Principal:
+        try:
+            agent = await service.get(agent_id)
+        except EntityNotFoundError:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "agent not found") from None
+        if not (principal.has(permission) or agent.created_by == principal.subject):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, f"missing permission: {permission}")
+        return principal
+
+    return guard
 
 
 @router.post(
@@ -19,9 +39,11 @@ router = APIRouter(prefix="/agents", tags=["agents"])
     dependencies=[Depends(require_permission(Permission.AGENT_CREATE))],
 )
 async def create_agent(
-    payload: AgentCreate, service: AgentService = Depends(get_agent_service)
+    payload: AgentCreate,
+    principal: Principal = Depends(get_principal),
+    service: AgentService = Depends(get_agent_service),
 ) -> AgentRead:
-    agent = await service.create(payload)
+    agent = await service.create(payload, created_by=principal.subject)
     return AgentRead.model_validate(agent)
 
 
@@ -45,7 +67,7 @@ async def get_agent(agent_id: str, service: AgentService = Depends(get_agent_ser
 @router.patch(
     "/{agent_id}",
     response_model=AgentRead,
-    dependencies=[Depends(require_permission(Permission.AGENT_UPDATE))],
+    dependencies=[Depends(require_agent_access(Permission.AGENT_UPDATE))],
 )
 async def update_agent(
     agent_id: str,
@@ -62,7 +84,7 @@ async def update_agent(
 @router.delete(
     "/{agent_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_permission(Permission.AGENT_DELETE))],
+    dependencies=[Depends(require_agent_access(Permission.AGENT_DELETE))],
 )
 async def delete_agent(agent_id: str, service: AgentService = Depends(get_agent_service)) -> None:
     try:

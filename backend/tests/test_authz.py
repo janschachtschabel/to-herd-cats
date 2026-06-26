@@ -62,9 +62,9 @@ async def test_unknown_role_denies(client):
 async def test_permissions_are_unioned_across_roles(client):
     await client.post("/roles", json={"name": "maker", "permissions": ["agent.create"]})
     await client.post("/roles", json={"name": "remover", "permissions": ["agent.delete"]})
-    created = (
-        await client.post("/agents", json={"name": "Temp"}, headers={"X-Dev-Roles": "maker"})
-    ).json()
+    # Created by dev-admin so maker/remover are NOT owners — isolates the
+    # permission union from agent ownership (see test_agents_ownership.py).
+    created = (await client.post("/agents", json={"name": "Temp"})).json()
 
     # "maker" alone cannot delete; "maker,remover" can.
     only_maker = await client.delete(f"/agents/{created['id']}", headers={"X-Dev-Roles": "maker"})
@@ -145,7 +145,9 @@ def test_every_write_route_is_permission_guarded():
         if any((method, route.path) in _OPEN_MUTATIONS for method in methods):
             continue
         guarded = any(
-            getattr(dep.call, "__qualname__", "").startswith("require_permission")
+            getattr(dep.call, "__qualname__", "").startswith(
+                ("require_permission", "require_agent_access")
+            )
             for dep in route.dependant.dependencies
         )
         if not guarded:

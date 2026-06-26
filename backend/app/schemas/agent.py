@@ -71,5 +71,8 @@ class AgentRead(AgentBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    # Owner subject; server-set on create, so it is read-only (absent from
+    # AgentBase/AgentCreate/AgentUpdate — clients cannot set or change it).
+    created_by: str | None = None
     created_at: datetime
     updated_at: datetime
