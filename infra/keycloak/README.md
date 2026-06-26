@@ -41,12 +41,17 @@ A verified token then becomes the principal; an invalid one is rejected with
 
 ## 3. Map the realm roles to permissions
 
-For each Keycloak **realm role** create a cockpit **Role with the same name**
-(Roles view, or `POST /roles`) and give it permissions:
+The backend **auto-seeds an `admin` cockpit Role (`*`, all permissions) on first
+startup** when no roles exist, so a Keycloak user with the `admin` realm role has
+full access out of the box and can define the rest in the UI — no manual
+bootstrap needed.
+
+For the other realm roles, create a cockpit **Role with the same name** (Roles
+view, or `POST /roles`) and give it permissions:
 
 | Realm role | Suggested cockpit permissions |
 | ---------- | ----------------------------- |
-| `admin`    | `*` (everything)              |
+| `admin`    | `*` (everything) — **seeded automatically** |
 | `editor`   | the `*.create` / `*.update` / `*.delete` and `run.create` / `run.approve` it should have |
 | `viewer`   | none (read-only)              |
 

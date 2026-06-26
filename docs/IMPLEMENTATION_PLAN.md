@@ -216,6 +216,10 @@
   token to API calls, and shows Anmelden/Abmelden — otherwise the dev stub
   applies. Build- and unit-tested; the redirect/login flow itself is verified
   manually against a running Keycloak (`infra/keycloak/README.md`).
+  ✅ **Bootstrap admin seed** (`core/seed.py`): startup seeds an `admin` role
+  (`*`) when the roles table is empty, so a deployment with the dev stub off is
+  manageable — closes the first-role chicken-and-egg found during M8.3b
+  verification.
   Remaining: **M8.3c** resource ownership (owner column + subject now that the
   token carries a stable `sub`).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
@@ -369,3 +373,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.2b: `GET /me` + frontend AuthService/interceptor/initializer, then `requirePermission` route guards + permission-gated UI (dev-roles switcher) | `92877e5`, `2483236`, `61a7b19` |
 | 2026-06-26 | M8.3a: OIDC (Keycloak) bearer-token verification (RS256/JWKS, iss/aud/exp); token principal preferred over the dev stub; PyJWT[crypto] | `b8ef6cb` |
 | 2026-06-26 | M8.3b: Keycloak infra (compose + cockpit realm) + frontend OIDC login (angular-auth-oidc-client, bearer token, login/logout) | `f8f3cc2`, `8e500e1` |
+| 2026-06-26 | M8 bootstrap: seed an `admin` role (`*`) on startup when roles are empty — closes the first-role chicken-and-egg (found verifying M8.3b vs real Keycloak) | `09899c9` |
