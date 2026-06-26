@@ -111,4 +111,31 @@ describe('EntityForm', () => {
     fixture.componentInstance.save();
     expect(updated).toEqual([['roles', 'r1', { name: 'Existing', enabled: false }]]);
   });
+
+  it('renders a textarea field and submits its value', () => {
+    const created: Array<[string, unknown]> = [];
+    const api = {
+      create: (path: string, payload: unknown) => {
+        created.push([path, payload]);
+        return of({});
+      },
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityForm],
+      providers: [{ provide: CrudApi, useValue: api }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(EntityForm);
+    fixture.componentRef.setInput('title', 'Skills');
+    fixture.componentRef.setInput('path', 'skills');
+    fixture.componentRef.setInput('fields', [
+      { key: 'instructions', label: 'Anweisungen', type: 'textarea' },
+    ]);
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('textarea')).toBeTruthy();
+    fixture.componentInstance.model = { instructions: '# How to' };
+    fixture.componentInstance.save();
+    expect(created).toEqual([['skills', { instructions: '# How to' }]]);
+  });
 });

@@ -10,7 +10,7 @@ export interface SelectOption {
 export interface FormField {
   key: string;
   label: string;
-  type: 'text' | 'checkbox' | 'select' | 'reference';
+  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'reference';
   required?: boolean;
   options?: SelectOption[];
   refPath?: string; // reference: the collection to load options from
@@ -201,12 +201,24 @@ export const ENTITIES: EntityConfig[] = [
     title: 'Skills',
     columns: [
       { key: 'name', label: 'Name' },
-      { key: 'kind', label: 'Art' },
+      { key: 'invocation', label: 'Aufruf' },
     ],
     fields: [
       { key: 'name', label: 'Name', type: 'text', required: true },
-      { key: 'description', label: 'Beschreibung', type: 'text', required: true },
-      { key: 'kind', label: 'Art', type: 'text' },
+      {
+        key: 'description',
+        label: 'Beschreibung (Trigger für progressive disclosure)',
+        type: 'text',
+        required: true,
+      },
+      { key: 'instructions', label: 'Anweisungen (SKILL.md-Inhalt)', type: 'textarea' },
+      {
+        key: 'invocation',
+        label: 'Aufruf',
+        type: 'select',
+        options: opts('model_invoked', 'command', 'both'),
+        default: 'model_invoked',
+      },
       { key: 'enabled', label: 'Aktiv', type: 'checkbox', default: true },
     ],
   },

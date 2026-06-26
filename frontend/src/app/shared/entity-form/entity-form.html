@@ -43,6 +43,18 @@
             </mat-select>
           </mat-form-field>
         }
+        @case ('textarea') {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label }}</mat-label>
+            <textarea
+              matInput
+              rows="6"
+              [name]="field.key"
+              [(ngModel)]="model[field.key]"
+              [required]="field.required ?? false"
+            ></textarea>
+          </mat-form-field>
+        }
         @default {
           <mat-form-field appearance="outline">
             <mat-label>{{ field.label }}</mat-label>
