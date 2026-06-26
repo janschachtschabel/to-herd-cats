@@ -184,13 +184,24 @@
 - **Verify:** `ng build` + `ng test` green; UI drives the real API; every UI
   string is an i18n key.
 
-### M8 — Auth & RBAC (Keycloak)
+### M8 — Auth & RBAC (Keycloak) — IN PROGRESS
+- **Status:** ✅ **M8.1 — RBAC model + guards on a dev stub.** Roles carry a
+  permission set (`Role.permissions`); `app/api/security.py` resolves a
+  `Principal` and `require_permission(...)` guards routes (agents
+  create/update/delete; inbox respond → `run.approve`). Reads stay open.
+  Identity is a dev stub gated by `auth_dev_mode`: an `X-Dev-Roles` header maps
+  to the named roles' unioned permissions, header-less = wildcard admin (so the
+  cockpit is usable without a login); with the flag off the stub is inactive —
+  anonymous, guarded routes deny, header not honored. Remaining: **M8.2** roll
+  guards across the other write routers + resource ownership (owner column +
+  subject) + frontend route guards; **M8.3** real Keycloak/OIDC (replace
+  `get_principal` with token→subject/roles).
 - **Goal:** user management with roles (CLAUDE.md §3 Platform).
 - **Plan:** Keycloak (OIDC); the app stores only role→permission mappings and
   ownership; backend dependency guards + frontend route guards; permissions like
   `agent.create`, `run.approve`.
-- **Verify:** protected endpoints enforce roles (403 without permission, 200
-  with).
+- **Verify:** protected endpoints enforce roles (403 without permission,
+  201/200 with) — see `tests/test_authz.py`.
 
 ### M9 — Postgres parity & packaging
 - **Goal:** Definition of Done met (CLAUDE.md §12: runs on SQLite *and* Postgres).
@@ -331,3 +342,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M7.6: skill authoring (SKILL.md body) + textarea field; fix skills form | `12804ff` |
 | 2026-06-26 | chore: ignore SQLite WAL/SHM checkpointer sidecars | `0138260` |
 | 2026-06-26 | M7.7: in-house i18n (service + `t` pipe + `de` map); key all UI chrome/errors, then entity config labels + run-fallback goal — completes M7 | `943df97`, `d3ac6fe` |
+| 2026-06-26 | M8.1: RBAC permission model + `require_permission` guards (agents writes, inbox respond) on a dev-stub identity (`auth_dev_mode`) | `3b12fc9` |
