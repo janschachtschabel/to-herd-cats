@@ -381,3 +381,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8 bootstrap: seed an `admin` role (`*`) on startup when roles are empty — closes the first-role chicken-and-egg (found verifying M8.3b vs real Keycloak) | `09899c9` |
 | 2026-06-26 | M8.3c: agent ownership (`created_by`; owner-or-permission update/delete) + migration — completes M8 | `6ee75e2` |
 | 2026-06-26 | CI: GitHub Actions (backend ruff/pytest/alembic + frontend prettier/build/vitest); green on real Actions | `9587d08`, `c3603e2` |
+| 2026-06-27 | DX: opt-in `[demo]` example data (`app.demo_seed` seed/`--clear`) so the UI isn't empty when trying it out | `f0dd32d` |

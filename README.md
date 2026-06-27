@@ -84,6 +84,15 @@ uv run pytest        # backend tests
 ng test              # frontend tests (Vitest)
 ```
 
+Optional `[demo]` example data (so the UI isn't empty when trying it out — every
+record is named `[demo] …`, removable individually in the UI or all at once):
+
+```bash
+cd backend
+uv run python -m app.demo_seed                 # add the demo data
+uv run python -m app.demo_seed --clear         # remove it again
+```
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE) © 2026 Jan Schachtschabel.
