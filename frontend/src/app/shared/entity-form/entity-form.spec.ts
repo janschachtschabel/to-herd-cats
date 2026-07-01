@@ -86,6 +86,49 @@ describe('EntityForm', () => {
     ]);
   });
 
+  it('loads options for a multi-reference field and submits the selected ids', () => {
+    const created: Array<[string, unknown]> = [];
+    const api = {
+      create: (path: string, payload: unknown) => {
+        created.push([path, payload]);
+        return of({});
+      },
+      list: () =>
+        of([
+          { id: 't1', name: 'Search' },
+          { id: 't2', name: 'Fetch' },
+        ]),
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityForm],
+      providers: [{ provide: CrudApi, useValue: api }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(EntityForm);
+    fixture.componentRef.setInput('title', 'Agenten');
+    fixture.componentRef.setInput('path', 'agents');
+    fixture.componentRef.setInput('fields', [
+      {
+        key: 'tool_ids',
+        label: 'Werkzeuge',
+        type: 'multi-reference',
+        refPath: 'tools',
+        refLabel: 'name',
+      },
+    ]);
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    expect(fixture.componentInstance.options()['tool_ids']).toEqual([
+      { value: 't1', label: 'Search' },
+      { value: 't2', label: 'Fetch' },
+    ]);
+    expect(fixture.componentInstance.model['tool_ids']).toEqual([]);
+
+    fixture.componentInstance.model = { tool_ids: ['t1', 't2'] };
+    fixture.componentInstance.save();
+    expect(created).toEqual([['agents', { tool_ids: ['t1', 't2'] }]]);
+  });
+
   it('pre-fills from the entity and PATCHes on save in edit mode', () => {
     const updated: Array<[string, string, unknown]> = [];
     const api = {

@@ -43,6 +43,16 @@
             </mat-select>
           </mat-form-field>
         }
+        @case ('multi-reference') {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label | t }}</mat-label>
+            <mat-select [name]="field.key" [(ngModel)]="model[field.key]" multiple>
+              @for (opt of options()[field.key] ?? []; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
         @case ('textarea') {
           <mat-form-field appearance="outline">
             <mat-label>{{ field.label | t }}</mat-label>

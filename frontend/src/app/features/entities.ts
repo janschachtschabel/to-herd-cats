@@ -14,7 +14,9 @@ export interface SelectOption {
 export interface FormField {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'reference';
+  // ``reference`` selects one related id; ``multi-reference`` selects many (a
+  // list of ids, e.g. an agent's tool_ids). Both load options from ``refPath``.
+  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'reference' | 'multi-reference';
   required?: boolean;
   options?: SelectOption[];
   refPath?: string; // reference: the collection to load options from

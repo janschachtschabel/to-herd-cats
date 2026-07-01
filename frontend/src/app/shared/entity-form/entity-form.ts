@@ -14,10 +14,11 @@ import { FormField, SelectOption } from '../../features/entities';
 
 /** Config-driven create or edit form for a backend collection.
 
-    Renders the entity's ``fields`` (text / checkbox / select, plus reference
-    fields whose options load from a related collection). With an ``id`` it
-    pre-fills from the existing entity and PATCHes on save; otherwise it POSTs a
-    new one. The MCP config_schema form is the remaining M7.3b piece. */
+    Renders the entity's ``fields`` (text / textarea / checkbox / select, plus
+    single- and multi-reference fields whose options load from a related
+    collection — the latter for id lists such as an agent's tool_ids). With an
+    ``id`` it pre-fills from the existing entity and PATCHes on save; otherwise
+    it POSTs a new one. */
 @Component({
   selector: 'app-entity-form',
   imports: [
@@ -48,13 +49,18 @@ export class EntityForm implements OnInit {
   // Options for reference fields, loaded from their related collection. Partial:
   // a field's options are absent until its related collection has loaded.
   readonly options = signal<Partial<Record<string, SelectOption[]>>>({});
-  model: Record<string, string | boolean> = {};
+  // A field's value: text/select -> string, checkbox -> boolean, multi-reference
+  // -> a list of ids.
+  model: Record<string, string | boolean | string[]> = {};
 
   ngOnInit(): void {
-    const model: Record<string, string | boolean> = {};
+    const model: Record<string, string | boolean | string[]> = {};
     for (const field of this.fields()) {
-      model[field.key] = field.default ?? (field.type === 'checkbox' ? false : '');
-      if (field.type === 'reference') {
+      model[field.key] =
+        field.type === 'multi-reference'
+          ? []
+          : (field.default ?? (field.type === 'checkbox' ? false : ''));
+      if (field.type === 'reference' || field.type === 'multi-reference') {
         this.loadOptions(field);
       }
     }
@@ -71,7 +77,7 @@ export class EntityForm implements OnInit {
         for (const field of this.fields()) {
           const value = entity[field.key];
           if (value !== null && value !== undefined) {
-            model[field.key] = value as string | boolean;
+            model[field.key] = value as string | boolean | string[];
           }
         }
         this.model = model;
