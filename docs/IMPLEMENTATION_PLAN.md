@@ -382,3 +382,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-26 | M8.3c: agent ownership (`created_by`; owner-or-permission update/delete) + migration — completes M8 | `6ee75e2` |
 | 2026-06-26 | CI: GitHub Actions (backend ruff/pytest/alembic + frontend prettier/build/vitest); green on real Actions | `9587d08`, `c3603e2` |
 | 2026-06-27 | DX: opt-in `[demo]` example data (`app.demo_seed` seed/`--clear`) so the UI isn't empty when trying it out | `f0dd32d` |
+| 2026-07-02 | Frontend-integration Phase 1: `multi-reference` field type; full agent config form + edit (LLM/tools/skills/data/template via the generic entity-form) | `4da2bcb`, `0b4c251` |
