@@ -25,6 +25,17 @@ export const MESSAGES_DE: Record<string, string> = {
   'agents.runError': 'Run konnte nicht gestartet werden.',
   // Sent as the run goal when an agent has none set.
   'agents.defaultGoal': 'Führe deine konfigurierte Aufgabe aus.',
+  // Agent create/edit form fields (features/agents/agent-fields.ts)
+  'agentField.role': 'Rolle',
+  'agentField.goal': 'Ziel',
+  'agentField.description': 'Beschreibung',
+  'agentField.instructions': 'Instruktionen',
+  'agentField.status': 'Status',
+  'agentField.llm': 'LLM-Verbindung',
+  'agentField.tools': 'Werkzeuge',
+  'agentField.skills': 'Skills',
+  'agentField.dataSources': 'Wissensspeicher',
+  'agentField.template': 'Standard-Template',
 
   // Postbox (inbox)
   'inbox.heading': 'Postbox',

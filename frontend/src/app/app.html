@@ -19,13 +19,7 @@
 <mat-sidenav-container class="app-shell">
   <mat-sidenav mode="side" opened>
     <mat-nav-list>
-      <a
-        mat-list-item
-        routerLink="/"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        >{{ 'nav.agents' | t }}</a
-      >
+      <a mat-list-item routerLink="/agents" routerLinkActive="active">{{ 'nav.agents' | t }}</a>
       <a mat-list-item routerLink="/inbox" routerLinkActive="active">{{ 'nav.inbox' | t }}</a>
       <a mat-list-item routerLink="/runs" routerLinkActive="active">{{ 'nav.runs' | t }}</a>
       @for (entity of entities; track entity.path) {

@@ -12,7 +12,6 @@ import { AgentsApi } from './agents-api';
 function setup(agents: Agent[], extra: Partial<AgentsApi> = {}) {
   const api: Partial<AgentsApi> = {
     listAgents: () => of(agents),
-    createAgent: () => of({} as Agent),
     runAgent: () => of({}),
     ...extra,
   };
@@ -42,6 +41,14 @@ describe('Agents', () => {
   it('shows an empty state when there are no agents', () => {
     const el = setup([]).nativeElement as HTMLElement;
     expect(el.textContent).toContain('Noch keine Agenten');
+  });
+
+  it('links to the create form and each agent edit form', () => {
+    const el = setup([{ id: 'a1', name: 'R', status: 'active', goal: '', created_at: '' }])
+      .nativeElement as HTMLElement;
+    const hrefs = Array.from(el.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/agents/new');
+    expect(hrefs).toContain('/agents/a1/edit');
   });
 
   it('starts a run with the agent goal and navigates to the runs view', () => {

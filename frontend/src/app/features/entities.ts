@@ -45,7 +45,7 @@ export interface EntityConfig {
   fields?: FormField[];
 }
 
-function opts(...values: string[]): SelectOption[] {
+export function opts(...values: string[]): SelectOption[] {
   return values.map((value) => ({ value, label: value }));
 }
 

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { requirePermission } from './core/permission.guard';
+import { AGENT_FIELDS } from './features/agents/agent-fields';
 import { Agents } from './features/agents/agents';
 import { ENTITIES } from './features/entities';
 import { Inbox } from './features/inbox/inbox';
@@ -10,9 +11,23 @@ import { EntityList } from './shared/entity-list/entity-list';
 
 // Each entity gets a generic list route; entities with a create-form config also
 // get a "/new" route. title/path/columns/fields are route data bound to the
-// component inputs (withComponentInputBinding).
+// component inputs (withComponentInputBinding). Agents keep a bespoke list (with
+// the run action) but reuse the generic entity-form for their rich config.
 export const routes: Routes = [
-  { path: '', component: Agents },
+  { path: '', redirectTo: 'agents', pathMatch: 'full' },
+  { path: 'agents', component: Agents },
+  {
+    path: 'agents/new',
+    component: EntityForm,
+    data: { title: 'nav.agents', path: 'agents', fields: AGENT_FIELDS },
+    canActivate: [requirePermission('agent.create')],
+  },
+  {
+    path: 'agents/:id/edit',
+    component: EntityForm,
+    data: { title: 'nav.agents', path: 'agents', fields: AGENT_FIELDS },
+    canActivate: [requirePermission('agent.update')],
+  },
   { path: 'inbox', component: Inbox },
   { path: 'runs', component: Runs },
   ...ENTITIES.flatMap((entity) => {

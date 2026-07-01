@@ -3,19 +3,16 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE } from '../../core/api-base';
-import { Agent, AgentCreate } from './agent';
+import { Agent } from './agent';
 
-/** Data access for agents against the backend control API. */
+/** Data access for the agents list + run. Create/edit go through the generic
+    CrudApi via the entity-form, so no create/update lives here. */
 @Injectable({ providedIn: 'root' })
 export class AgentsApi {
   private readonly http = inject(HttpClient);
 
   listAgents(): Observable<Agent[]> {
     return this.http.get<Agent[]>(`${API_BASE}/agents`);
-  }
-
-  createAgent(payload: AgentCreate): Observable<Agent> {
-    return this.http.post<Agent>(`${API_BASE}/agents`, payload);
   }
 
   runAgent(agentId: string, goal: string): Observable<unknown> {
