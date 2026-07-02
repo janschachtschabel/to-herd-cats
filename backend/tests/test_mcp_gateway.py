@@ -10,8 +10,10 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 from mcp.shared.memory import create_connected_server_and_client_session
 
+from app.core.secret_ref import SecretResolutionError
 from app.integrations.mcp_gateway import (
     MCPDiscoveryError,
+    _auth_headers,
     call_tool_on_session,
     discover_tools,
     tools_from_session,
@@ -39,6 +41,22 @@ async def test_tools_from_real_session():
     assert tools[0]["name"] == "add"
     assert tools[0]["description"] == "Add two numbers."
     assert tools[0]["input_schema"]  # non-empty JSON Schema
+
+
+def test_auth_headers_none_without_credentials():
+    assert _auth_headers(MCPServer(name="x", transport="streamable_http")) is None
+
+
+def test_auth_headers_resolves_bearer_token(monkeypatch):
+    monkeypatch.setenv("MY_MCP_TOKEN", "s3cr3t")
+    server = MCPServer(name="x", transport="streamable_http", credentials_ref="env:MY_MCP_TOKEN")
+    assert _auth_headers(server) == {"Authorization": "Bearer s3cr3t"}
+
+
+def test_auth_headers_raises_when_secret_missing():
+    server = MCPServer(name="x", transport="streamable_http", credentials_ref="env:UNSET_MCP_TOKEN")
+    with pytest.raises(SecretResolutionError):
+        _auth_headers(server)
 
 
 async def test_discover_rejects_unsupported_transport():

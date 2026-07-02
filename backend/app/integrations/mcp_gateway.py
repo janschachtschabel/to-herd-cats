@@ -5,8 +5,10 @@ streamable HTTP), lists the server's tools, and returns normalized descriptors.
 Routing agents' tool *calls* through a gateway (MCPJungle) is a later concern;
 discovery needs a direct connection, which is what this module does.
 
-Discovery is currently unauthenticated; resolving a server's ``credentials_ref``
-into auth headers is a follow-up.
+A server's ``credentials_ref`` (a SecretRef) is resolved to a bearer auth header
+for streamable-HTTP transports; the plaintext token is only ever placed in the
+outgoing header, never stored or logged. (stdio auth is via the subprocess
+environment, out of scope here.)
 """
 
 import json
@@ -18,6 +20,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
+from app.core.secret_ref import resolve_secret
 from app.models.mcp_server import MCPServer
 
 
@@ -38,6 +41,17 @@ async def tools_from_session(session: ClientSession) -> list[dict[str, Any]]:
     ]
 
 
+def _auth_headers(server: MCPServer) -> dict[str, str] | None:
+    """Resolve the server's ``credentials_ref`` into a bearer auth header.
+
+    Returns None when the server has no credentials. Raises SecretResolutionError
+    if the reference cannot be resolved (e.g. the env var is unset).
+    """
+    if not server.credentials_ref:
+        return None
+    return {"Authorization": f"Bearer {resolve_secret(server.credentials_ref)}"}
+
+
 @asynccontextmanager
 async def _connect(server: MCPServer) -> AsyncIterator[ClientSession]:
     """Open and initialize a client session for the server's transport."""
@@ -52,7 +66,11 @@ async def _connect(server: MCPServer) -> AsyncIterator[ClientSession]:
     elif server.transport == "streamable_http":
         if not server.url:
             raise MCPDiscoveryError("streamable_http transport requires a url")
-        async with streamablehttp_client(server.url) as (read, write, _):
+        async with streamablehttp_client(server.url, headers=_auth_headers(server)) as (
+            read,
+            write,
+            _,
+        ):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 yield session
