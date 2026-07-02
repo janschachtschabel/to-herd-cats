@@ -16,7 +16,8 @@ export interface FormField {
   label: string;
   // ``reference`` selects one related id; ``multi-reference`` selects many (a
   // list of ids, e.g. an agent's tool_ids). Both load options from ``refPath``.
-  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'reference' | 'multi-reference';
+  // ``json`` edits an object/array field as JSON text (parsed on save).
+  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'reference' | 'multi-reference' | 'json';
   required?: boolean;
   options?: SelectOption[];
   refPath?: string; // reference: the collection to load options from
@@ -86,6 +87,8 @@ export const ENTITIES: EntityConfig[] = [
       { key: 'command', label: 'label.command', type: 'text' },
       { key: 'url', label: 'label.url', type: 'text' },
       { key: 'credentials_ref', label: 'label.credentialsRef', type: 'text' },
+      { key: 'args', label: 'label.args', type: 'json' },
+      { key: 'config_schema', label: 'label.configSchema', type: 'json' },
     ],
   },
   {
@@ -142,6 +145,7 @@ export const ENTITIES: EntityConfig[] = [
       },
       { key: 'embedding_model', label: 'label.embeddingModel', type: 'text' },
       { key: 'collection', label: 'label.collection', type: 'text' },
+      { key: 'connection_ref', label: 'label.dataConnection', type: 'json' },
       { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },
@@ -169,6 +173,7 @@ export const ENTITIES: EntityConfig[] = [
         options: opts('markdown', 'html', 'pdf', 'docx'),
       },
       { key: 'render_template', label: 'label.renderTemplate', type: 'textarea' },
+      { key: 'output_schema', label: 'label.outputSchema', type: 'json' },
     ],
   },
   {
@@ -204,6 +209,7 @@ export const ENTITIES: EntityConfig[] = [
         refLabel: 'name',
       },
       { key: 'connection_ref', label: 'label.connectionRef', type: 'text' },
+      { key: 'routing', label: 'label.routing', type: 'json' },
       { key: 'enabled', label: 'label.active', type: 'checkbox', default: true },
     ],
   },

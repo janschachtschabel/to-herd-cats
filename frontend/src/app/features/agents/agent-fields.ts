@@ -5,7 +5,7 @@ import { FormField, opts } from '../entities';
  *  The reference / multi-reference fields are what actually wire an agent to its
  *  LLM connection, tools, skills, data sources and output template — all of
  *  which the run engine already consumes (services/runs.py). Memory and
- *  guardrails are nested objects and land with the JSON field type in phase 2. */
+ *  guardrails are nested objects, edited as JSON. */
 export const AGENT_FIELDS: FormField[] = [
   { key: 'name', label: 'label.name', type: 'text', required: true },
   { key: 'role', label: 'agentField.role', type: 'text' },
@@ -54,4 +54,6 @@ export const AGENT_FIELDS: FormField[] = [
     refPath: 'templates',
     refLabel: 'name',
   },
+  { key: 'memory', label: 'agentField.memory', type: 'json' },
+  { key: 'guardrails', label: 'agentField.guardrails', type: 'json' },
 ];

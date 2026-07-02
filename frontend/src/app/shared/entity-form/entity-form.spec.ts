@@ -129,6 +129,40 @@ describe('EntityForm', () => {
     expect(created).toEqual([['agents', { tool_ids: ['t1', 't2'] }]]);
   });
 
+  it('parses a json field on save and rejects invalid json', () => {
+    const created: Array<[string, unknown]> = [];
+    const api = {
+      create: (path: string, payload: unknown) => {
+        created.push([path, payload]);
+        return of({});
+      },
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityForm],
+      providers: [{ provide: CrudApi, useValue: api }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(EntityForm);
+    fixture.componentRef.setInput('title', 'Vorlagen');
+    fixture.componentRef.setInput('path', 'templates');
+    fixture.componentRef.setInput('fields', [
+      { key: 'output_schema', label: 'Schema', type: 'json' },
+    ]);
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    // valid json is parsed into an object
+    fixture.componentInstance.model = { output_schema: '{"a": 1}' };
+    fixture.componentInstance.save();
+    expect(created).toEqual([['templates', { output_schema: { a: 1 } }]]);
+
+    // invalid json blocks the submit and reports the error
+    created.length = 0;
+    fixture.componentInstance.model = { output_schema: '{bad' };
+    fixture.componentInstance.save();
+    expect(created).toEqual([]);
+    expect(fixture.componentInstance.error()).toContain('JSON');
+  });
+
   it('pre-fills from the entity and PATCHes on save in edit mode', () => {
     const updated: Array<[string, string, unknown]> = [];
     const api = {

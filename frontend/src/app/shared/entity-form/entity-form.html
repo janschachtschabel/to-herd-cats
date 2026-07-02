@@ -65,6 +65,18 @@
             ></textarea>
           </mat-form-field>
         }
+        @case ('json') {
+          <mat-form-field appearance="outline">
+            <mat-label>{{ field.label | t }}</mat-label>
+            <textarea
+              matInput
+              rows="6"
+              class="json"
+              [name]="field.key"
+              [(ngModel)]="model[field.key]"
+            ></textarea>
+          </mat-form-field>
+        }
         @default {
           <mat-form-field appearance="outline">
             <mat-label>{{ field.label | t }}</mat-label>

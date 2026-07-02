@@ -77,7 +77,10 @@ export class EntityForm implements OnInit {
         for (const field of this.fields()) {
           const value = entity[field.key];
           if (value !== null && value !== undefined) {
-            model[field.key] = value as string | boolean | string[];
+            model[field.key] =
+              field.type === 'json'
+                ? JSON.stringify(value, null, 2)
+                : (value as string | boolean | string[]);
           }
         }
         this.model = model;
@@ -110,16 +113,24 @@ export class EntityForm implements OnInit {
       this.error.set(this.i18n.t('form.requiredMissing') + ': ' + this.i18n.t(missing.label));
       return;
     }
+    let payload: Record<string, unknown>;
+    try {
+      payload = this.buildPayload();
+    } catch {
+      this.error.set(this.i18n.t('form.invalidJson'));
+      return;
+    }
     const id = this.id();
     const request = id
-      ? this.api.update(this.path(), id, this.buildPayload())
-      : this.api.create(this.path(), this.buildPayload());
+      ? this.api.update(this.path(), id, payload)
+      : this.api.create(this.path(), payload);
     request.subscribe({
       next: () => this.router.navigateByUrl('/' + this.path()),
       error: () => this.error.set(this.i18n.t('form.saveError')),
     });
   }
 
+  /** Assemble the payload; JSON fields are parsed (throws on invalid JSON). */
   private buildPayload(): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
     for (const field of this.fields()) {
@@ -128,7 +139,7 @@ export class EntityForm implements OnInit {
       if (value === '' && !field.required) {
         continue;
       }
-      payload[field.key] = value;
+      payload[field.key] = field.type === 'json' ? JSON.parse(value as string) : value;
     }
     return payload;
   }

@@ -36,6 +36,8 @@ export const MESSAGES_DE: Record<string, string> = {
   'agentField.skills': 'Skills',
   'agentField.dataSources': 'Wissensspeicher',
   'agentField.template': 'Standard-Template',
+  'agentField.memory': 'Memory (JSON: {"mode":"short"})',
+  'agentField.guardrails': 'Guardrails (JSON: {"requires_approval_for":["finalize"]})',
 
   // Postbox (inbox)
   'inbox.heading': 'Postbox',
@@ -71,6 +73,7 @@ export const MESSAGES_DE: Record<string, string> = {
   'form.saveError': 'Speichern fehlgeschlagen.',
   'form.optionsError': 'Auswahllisten konnten nicht geladen werden.',
   'form.loadError': 'Eintrag konnte nicht geladen werden.',
+  'form.invalidJson': 'Ungültiges JSON in einem Feld.',
 
   // Entity titles (features/entities.ts)
   'title.llmConnections': 'LLM-Verbindungen',
@@ -112,6 +115,11 @@ export const MESSAGES_DE: Record<string, string> = {
   'label.collection': 'Collection',
   'label.timezone': 'Zeitzone (z. B. Europe/Berlin)',
   'label.renderTemplate': 'Render-Template (Jinja2)',
+  'label.outputSchema': 'Output-Schema (JSON)',
+  'label.args': 'Argumente (JSON-Array)',
+  'label.configSchema': 'Config-Schema (JSON)',
+  'label.routing': 'Routing (JSON-Array von Postbox-Typen)',
+  'label.dataConnection': 'Verbindung (JSON: {"driver","dsn_ref"})',
   'label.skillDescription': 'Beschreibung (Trigger für progressive disclosure)',
   'label.instructions': 'Anweisungen (SKILL.md-Inhalt)',
 };
