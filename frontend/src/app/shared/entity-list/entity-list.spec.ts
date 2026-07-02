@@ -69,4 +69,36 @@ describe('EntityList', () => {
     fixture.componentInstance.delete('a1');
     expect(calls).toEqual([['llm-connections', 'a1']]);
   });
+
+  it('runs a configured row action against /{path}/{id}/{action}', () => {
+    const calls: Array<[string, string, string]> = [];
+    const api = {
+      list: () => of([{ id: 'm1', name: 'GitHub MCP' }]),
+      action: (path: string, id: string, action: string) => {
+        calls.push([path, id, action]);
+        return of({});
+      },
+    } as unknown as CrudApi;
+    TestBed.configureTestingModule({
+      imports: [EntityList],
+      providers: [
+        { provide: CrudApi, useValue: api },
+        { provide: AuthService, useValue: { has: () => true } as unknown as AuthService },
+      ],
+    });
+    const fixture = TestBed.createComponent(EntityList);
+    fixture.componentRef.setInput('title', 'MCP-Server');
+    fixture.componentRef.setInput('path', 'mcp-servers');
+    fixture.componentRef.setInput('resource', 'mcp_server');
+    fixture.componentRef.setInput('columns', [{ key: 'name', label: 'Name' }]);
+    fixture.componentRef.setInput('rowAction', {
+      labelKey: 'action.discover',
+      action: 'discover',
+      permission: 'mcp_server.discover',
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.runAction('m1');
+    expect(calls).toEqual([['mcp-servers', 'm1', 'discover']]);
+  });
 });

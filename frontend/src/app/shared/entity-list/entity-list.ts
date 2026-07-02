@@ -17,6 +17,7 @@ import { AuthService } from '../../core/auth.service';
 import { CrudApi } from '../../core/crud-api';
 import { I18n } from '../../core/i18n';
 import { TranslatePipe } from '../../core/translate.pipe';
+import { RowAction } from '../../features/entities';
 
 export interface Column {
   key: string;
@@ -57,6 +58,8 @@ export class EntityList implements OnInit {
   readonly resource = input('');
   readonly columns = input.required<Column[]>();
   readonly creatable = input(false);
+  // Optional per-row action (e.g. an MCP server's "discover"); null when unset.
+  readonly rowAction = input<RowAction | null>(null);
 
   readonly rows = signal<Row[]>([]);
   readonly loading = signal(true);
@@ -87,6 +90,18 @@ export class EntityList implements OnInit {
     this.api.remove(this.path(), id).subscribe({
       next: () => this.reload(),
       error: () => this.error.set(this.i18n.t('list.deleteError')),
+    });
+  }
+
+  runAction(id: string): void {
+    const action = this.rowAction();
+    if (!action) {
+      return;
+    }
+    this.error.set(null);
+    this.api.action(this.path(), id, action.action).subscribe({
+      next: () => this.reload(),
+      error: () => this.error.set(this.i18n.t('list.actionError')),
     });
   }
 }

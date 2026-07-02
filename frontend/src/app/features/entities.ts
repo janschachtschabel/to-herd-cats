@@ -25,15 +25,22 @@ export interface FormField {
   default?: string | boolean;
 }
 
-/** A backend collection shown as a generic list shell (list + delete) and,
-    when ``fields`` is set, a config-driven create/edit form (reference fields
-    load their options from a related collection).
+/** An optional per-row action: POST /{path}/{id}/{action}, then reload the list.
+    Used e.g. for an MCP server's "discover tools". */
+export interface RowAction {
+  labelKey: string;
+  action: string;
+  permission: string;
+}
+
+/** A backend collection shown as a generic list shell (list + delete, plus an
+    optional per-row ``rowAction``) and, when ``fields`` is set, a config-driven
+    create/edit form (reference fields load their options from a related
+    collection).
 
     ``path`` is both the route path and the REST collection path. ``title`` and
     every column/field ``label`` are i18n keys (see core/messages.de.ts). The
-    bespoke key-value Setting is excluded (its own view later); the MCP
-    config_schema dynamic form is a follow-up (the backend has no config-value
-    field for it).
+    bespoke key-value Setting is excluded (its own view later).
 
     ``resource`` is the backend permission prefix for this collection (e.g.
     ``tool`` → ``tool.create`` / ``tool.update`` / ``tool.delete``); the list
@@ -44,6 +51,7 @@ export interface EntityConfig {
   title: string;
   columns: Column[];
   fields?: FormField[];
+  rowAction?: RowAction;
 }
 
 export function opts(...values: string[]): SelectOption[] {
@@ -71,6 +79,11 @@ export const ENTITIES: EntityConfig[] = [
     path: 'mcp-servers',
     resource: 'mcp_server',
     title: 'title.mcpServers',
+    rowAction: {
+      labelKey: 'action.discover',
+      action: 'discover',
+      permission: 'mcp_server.discover',
+    },
     columns: [
       { key: 'name', label: 'label.name' },
       { key: 'transport', label: 'label.transport' },

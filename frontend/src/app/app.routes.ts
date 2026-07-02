@@ -40,6 +40,7 @@ export const routes: Routes = [
         resource: entity.resource,
         columns: entity.columns,
         creatable: !!entity.fields,
+        rowAction: entity.rowAction ?? null,
       },
     };
     if (!entity.fields) {

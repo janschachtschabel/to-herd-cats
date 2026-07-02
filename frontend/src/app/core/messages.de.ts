@@ -63,6 +63,8 @@ export const MESSAGES_DE: Record<string, string> = {
   'list.delete': 'Löschen',
   'list.loadError': 'Daten konnten nicht geladen werden.',
   'list.deleteError': 'Löschen fehlgeschlagen.',
+  'list.actionError': 'Aktion fehlgeschlagen.',
+  'action.discover': 'Tools erkennen',
 
   // Generic entity form
   'form.new': 'neu',

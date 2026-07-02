@@ -31,4 +31,9 @@ export class CrudApi {
   update<T>(path: string, id: string, payload: unknown): Observable<T> {
     return this.http.patch<T>(`${API_BASE}/${path}/${id}`, payload);
   }
+
+  /** POST a bespoke per-row action, e.g. /mcp-servers/{id}/discover. */
+  action(path: string, id: string, action: string): Observable<unknown> {
+    return this.http.post(`${API_BASE}/${path}/${id}/${action}`, {});
+  }
 }
