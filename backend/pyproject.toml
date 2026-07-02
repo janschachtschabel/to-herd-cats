@@ -21,6 +21,9 @@ dependencies = [
     # OIDC (Keycloak) access-token verification: RS256 + JWKS. The crypto extra
     # pulls in `cryptography` for asymmetric signature checks.
     "pyjwt[crypto]>=2.9",
+    # The IANA timezone database, so ZoneInfo (trigger timezones) works on
+    # platforms without system tz data (Windows, slim containers).
+    "tzdata>=2024.1",
 ]
 
 [dependency-groups]

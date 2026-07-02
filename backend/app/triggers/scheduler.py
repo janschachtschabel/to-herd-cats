@@ -9,7 +9,8 @@ follow-up; this covers dev and single-node deployments.
 
 import asyncio
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, tzinfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from croniter import CroniterBadCronError, croniter
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -30,14 +31,29 @@ def _as_utc(dt: datetime) -> datetime:
     return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt
 
 
+def _resolve_tz(name: str | None) -> tzinfo:
+    # A trigger's cron is interpreted in its own timezone (default UTC), so e.g.
+    # "0 9 * * *" fires at 09:00 local wall time, not 09:00 UTC. An unknown zone
+    # falls back to UTC rather than breaking the trigger.
+    if not name:
+        return UTC
+    try:
+        return ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError):
+        logger.warning("trigger has unknown timezone %r; using UTC", name)
+        return UTC
+
+
 def _is_due(trigger: Trigger, now: datetime) -> bool:
     # Base the next-fire calculation on the last fire, or the trigger's creation
     # if it has never fired. A bad cron disables this trigger, not the scheduler.
     base = trigger.last_fired_at or trigger.created_at
     if not trigger.cron or base is None:
         return False
+    # Compute in the trigger's timezone; comparison is by absolute instant.
+    base_local = _as_utc(base).astimezone(_resolve_tz(trigger.timezone))
     try:
-        next_fire = croniter(trigger.cron, _as_utc(base)).get_next(datetime)
+        next_fire = croniter(trigger.cron, base_local).get_next(datetime)
     except CroniterBadCronError:
         logger.warning("trigger %s has an invalid cron %r; skipping", trigger.id, trigger.cron)
         return False

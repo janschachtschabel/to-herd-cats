@@ -28,6 +28,27 @@ def test_due_triggers_selects_only_due_scheduled():
     assert due_triggers([due, not_yet, disabled, wrong_mode, bad_cron], now) == [due]
 
 
+def test_due_triggers_respects_timezone():
+    # "0 9 * * *" = 09:00 daily; base just after midnight UTC so today's fire is ahead.
+    base = datetime(2026, 1, 1, 0, 30, tzinfo=UTC)
+    berlin = _trigger("0 9 * * *", base)
+    berlin.timezone = "Europe/Berlin"  # UTC+1 in January -> 09:00 Berlin == 08:00 UTC
+    utc_trigger = _trigger("0 9 * * *", base)  # timezone None -> UTC
+
+    # At 08:05 UTC the Berlin trigger is due (09:00 local passed) but the UTC one is not.
+    assert due_triggers([berlin, utc_trigger], datetime(2026, 1, 1, 8, 5, tzinfo=UTC)) == [berlin]
+    # By 09:05 UTC both are due.
+    assert len(due_triggers([berlin, utc_trigger], datetime(2026, 1, 1, 9, 5, tzinfo=UTC))) == 2
+
+
+def test_unknown_timezone_falls_back_to_utc():
+    base = datetime(2026, 1, 1, 0, 30, tzinfo=UTC)
+    trigger = _trigger("0 9 * * *", base)
+    trigger.timezone = "Mars/Olympus"  # unknown -> UTC, not a crash
+    assert due_triggers([trigger], datetime(2026, 1, 1, 8, 5, tzinfo=UTC)) == []
+    assert due_triggers([trigger], datetime(2026, 1, 1, 9, 5, tzinfo=UTC)) == [trigger]
+
+
 async def test_run_due_fires_scheduled_trigger(client, session_factory, monkeypatch):
     async def fake_complete(connection, messages, tools=None, **kw):
         return CompletionResult(content="done", model="mock", total_tokens=1)
