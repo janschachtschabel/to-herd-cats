@@ -308,8 +308,8 @@ integrations "just in case". Per milestone, only what the verification requires.
   `Run.trace_id`; non-MCP channel adapters (raw webhook, SMTP email) — only
   MCP-backed `send` delivery exists. Channel delivery is synchronous best-effort
   (a background/retry queue is a later concern).
-- **Review follow-ups (found, not yet fixed).** `Trigger.timezone` is accepted but
-  the scheduler always computes in UTC (non-UTC crons fire at the wrong wall time);
+- **Review follow-ups (found, not yet fixed).** ~~`Trigger.timezone` … UTC~~
+  (fixed 2026-07-02, `c360cf6`).
   `cors_origins` is JSON-only via pydantic-settings (a bare comma string in
   `COCKPIT_CORS_ORIGINS` raises at startup). Test-coverage gaps: `litellm_gateway.embed`
   mapping (always stubbed), channel-delivery routing branches (empty / `in` / no-MCP),
@@ -384,3 +384,4 @@ integrations "just in case". Per milestone, only what the verification requires.
 | 2026-06-27 | DX: opt-in `[demo]` example data (`app.demo_seed` seed/`--clear`) so the UI isn't empty when trying it out | `f0dd32d` |
 | 2026-07-02 | Frontend-integration Phase 1: `multi-reference` field type; full agent config form + edit (LLM/tools/skills/data/template via the generic entity-form) | `4da2bcb`, `0b4c251` |
 | 2026-07-02 | Frontend-integration Phase 2: role permissions editor (`GET /permissions`); SecretRef/reference fields; `json` field type (agent memory/guardrails, output_schema, args, routing…); config-driven per-row action (MCP discover) | `1ddc3d5`, `9993bb8`, `c085608`, `0e701d9` |
+| 2026-07-02 | Phase 3 (backend wiring): MCP `credentials_ref` → bearer auth header; agent `skill_ids` injected into the run prompt; scheduler computes cron in the trigger's timezone (+ tzdata) | `d7ce8d0`, `6bbfece`, `c360cf6` |
