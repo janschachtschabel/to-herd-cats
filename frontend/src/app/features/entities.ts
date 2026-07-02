@@ -254,6 +254,13 @@ export const ENTITIES: EntityConfig[] = [
     fields: [
       { key: 'name', label: 'label.name', type: 'text', required: true },
       { key: 'description', label: 'label.description', type: 'text' },
+      {
+        key: 'permissions',
+        label: 'label.permissions',
+        type: 'multi-reference',
+        refPath: 'permissions',
+        refLabel: 'name',
+      },
     ],
   },
 ];

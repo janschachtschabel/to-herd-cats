@@ -104,6 +104,7 @@ export const MESSAGES_DE: Record<string, string> = {
   'label.agent': 'Agent',
   'label.invocation': 'Aufruf',
   'label.description': 'Beschreibung',
+  'label.permissions': 'Rechte',
   'label.skillDescription': 'Beschreibung (Trigger für progressive disclosure)',
   'label.instructions': 'Anweisungen (SKILL.md-Inhalt)',
 };

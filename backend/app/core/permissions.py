@@ -67,3 +67,13 @@ class Permission:
     RUN_APPROVE = "run.approve"
 
     EVENT_PUBLISH = "event.publish"
+
+
+# The full catalog (wildcard first, then the named permissions), derived from
+# ``Permission`` so it never drifts. Exposed via ``GET /permissions`` for the
+# role editor.
+ALL_PERMISSIONS: list[str] = [WILDCARD] + sorted(
+    value
+    for name, value in vars(Permission).items()
+    if not name.startswith("_") and isinstance(value, str)
+)

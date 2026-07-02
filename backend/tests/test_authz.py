@@ -128,6 +128,13 @@ async def test_me_reflects_dev_roles_header(client):
     assert set(body["permissions"]) == {"agent.create", "tool.create"}
 
 
+async def test_permissions_catalog(client):
+    body = (await client.get("/permissions")).json()
+    names = {option["name"] for option in body}
+    assert {"*", "agent.create", "role.update", "run.approve"} <= names
+    assert all(option["id"] == option["name"] for option in body)
+
+
 def test_every_write_route_is_permission_guarded():
     """Every mutating route must carry a require_permission guard.
 

@@ -8,3 +8,10 @@ class PrincipalRead(BaseModel):
 
     subject: str
     permissions: list[str]
+
+
+class PermissionOption(BaseModel):
+    """A selectable permission for the role editor (id == name == the string)."""
+
+    id: str
+    name: str
