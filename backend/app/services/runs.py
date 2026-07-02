@@ -29,6 +29,7 @@ from app.repositories.llm_connections import SqlAlchemyLLMConnectionRepository
 from app.repositories.mcp_servers import SqlAlchemyMCPServerRepository
 from app.repositories.memories import SqlAlchemyMemoryRepository
 from app.repositories.runs import SqlAlchemyRunRepository
+from app.repositories.skills import SqlAlchemySkillRepository
 from app.repositories.templates import SqlAlchemyTemplateRepository
 from app.repositories.tools import SqlAlchemyToolRepository
 from app.runtime.graph import GraphResult, resume_run, start_run
@@ -62,6 +63,7 @@ class RunService:
         self._templates = SqlAlchemyTemplateRepository(session)
         self._data_sources = SqlAlchemyDataSourceRepository(session)
         self._memories = SqlAlchemyMemoryRepository(session)
+        self._skills = SqlAlchemySkillRepository(session)
 
     async def get(self, run_id: str) -> Run:
         run = await self._runs.get(run_id)
@@ -98,6 +100,7 @@ class RunService:
         connection = await self._resolve_connection(agent)
         resolved = await self._resolve_tools(agent)
         sources = await self._resolve_data_sources(agent)
+        skills = await self._resolve_skills(agent)
 
         run = Run(
             agent_id=agent_id,
@@ -116,7 +119,13 @@ class RunService:
         context = await self._build_context(agent, payload.goal, sources, connection)
         try:
             result = await start_run(
-                agent, connection, resolved, run.input, thread_id=run.id, context=context
+                agent,
+                connection,
+                resolved,
+                run.input,
+                thread_id=run.id,
+                context=context,
+                skills=skills,
             )
         except Exception as exc:  # provider/runtime failure -> failed run
             self._mark_failed(run, exc)
@@ -186,6 +195,17 @@ class RunService:
             server = await self._mcp.get(ds.mcp_server_id) if ds.mcp_server_id else None
             resolved.append(ResolvedDataSource(data_source=ds, server=server))
         return resolved
+
+    async def _resolve_skills(self, agent: Agent) -> str:
+        """Combine the agent's enabled skills' instructions into one prompt block."""
+        blocks: list[str] = []
+        for skill_id in agent.skill_ids or []:
+            skill = await self._skills.get(skill_id)
+            if skill is None or not skill.enabled:
+                logger.warning("agent %s skips missing or disabled skill %s", agent.id, skill_id)
+                continue
+            blocks.append(f"## Skill: {skill.name}\n{skill.instructions}".strip())
+        return "\n\n".join(blocks)
 
     async def _build_context(
         self,
