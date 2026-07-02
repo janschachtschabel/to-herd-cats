@@ -105,6 +105,13 @@ export const MESSAGES_DE: Record<string, string> = {
   'label.invocation': 'Aufruf',
   'label.description': 'Beschreibung',
   'label.permissions': 'Rechte',
+  'label.apiKeyRef': 'API-Key-Referenz (env:VAR)',
+  'label.credentialsRef': 'Credentials-Referenz (env:VAR)',
+  'label.connectionRef': 'Verbindungs-Referenz (env:VAR)',
+  'label.embeddingModel': 'Embedding-Modell',
+  'label.collection': 'Collection',
+  'label.timezone': 'Zeitzone (z. B. Europe/Berlin)',
+  'label.renderTemplate': 'Render-Template (Jinja2)',
   'label.skillDescription': 'Beschreibung (Trigger für progressive disclosure)',
   'label.instructions': 'Anweisungen (SKILL.md-Inhalt)',
 };
